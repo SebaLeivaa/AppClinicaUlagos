@@ -4,7 +4,8 @@ import 'package:clinica_ulagos_app/screens/crear_clave.dart';
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:clinica_ulagos_app/funcionesValidaciones/validaciones.dart';
+import 'package:clinica_ulagos_app/consultasFirebase/consultas.dart';
 
 class RegistrarseScreen extends StatefulWidget {
   const RegistrarseScreen({Key? key}) : super(key: key);
@@ -36,13 +37,19 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
   Color femeninoColor = AppColors.inputs;
   Color masculinoColor = AppColors.inputs;
   Color otroColor = AppColors.inputs;
-  bool errorRut = false;
-  bool errorNombre = false;
-  bool errorApePat = false;
-  bool errorApeMat = false;
-  bool errorFec = false;
-  bool errorCorreo = false;
-  bool errorTelefono = false;
+  bool errorRutVacio = false;
+  bool errorRutExiste = false;
+  bool errorRutInvalido = false;
+  bool errorNombreVacio = false;
+  bool errorApePatVacio = false;
+  bool errorApeMatVacio = false;
+  bool errorFecVacio = false;
+  bool errorCorreoVacio = false;
+  bool errorCorreoExiste = false;
+  bool errorCorreoInvalido = false;
+  bool errorTelefonoVacio = false;
+  bool errorTelefonoExiste = false;
+  bool errorTelefonoInvalido = false;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +62,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
             color: AppColors.white,
           ),
         ),
-        centerTitle: true, // Centra el texto del título
+        centerTitle: true,
         iconTheme: const IconThemeData(
           color: AppColors.white,
           size: 36,
@@ -82,12 +89,6 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.only(
-                    left: 30.0,
-                    top: 30.0,
-                  ),
-                ),
               ],
             ),
             Container(
@@ -99,15 +100,47 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 onSaved: (value) {
                   rutValue = value ?? '';
                 },
+                onChanged: (value) {
+                  setState(() {
+                    if (value.isEmpty) {
+                      setState(() {
+                        errorRutVacio = true;
+                      });
+                    } else if (!validarRut(value)) {
+                      setState(() {
+                        errorRutVacio = false;
+                        errorRutExiste = false;
+                        errorRutInvalido = true;
+                      });
+                    } else {
+                      checkIfRutExists(value).then((rutExists) {
+                        setState(() {
+                          errorRutExiste = rutExists;
+                          errorRutVacio = false;
+                          errorRutInvalido = false;
+                        });
+                      });
+                    }
+                  });
+                },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     setState(() {
-                      errorRut = true;
+                      errorRutVacio = true;
+                    });
+                  } else if (!validarRut(value)) {
+                    setState(() {
+                      errorRutVacio = false;
+                      errorRutExiste = false;
+                      errorRutInvalido = true;
                     });
                   } else {
-                    setState(() {
-                      errorRut = false;
-                      rutValue = value;
+                    checkIfRutExists(value).then((rutExists) {
+                      setState(() {
+                        errorRutExiste = rutExists;
+                        errorRutVacio = false;
+                        errorRutInvalido = false;
+                      });
                     });
                   }
                   return null;
@@ -133,11 +166,17 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 ),
               ),
             ),
-            if (errorRut)
-              const Padding(
-                padding: EdgeInsets.only(top: 7.0, left: 30.0),
-                child: Text('Por favor, ingrese un rut',
-                    style: TextStyle(color: AppColors.error)),
+            if (errorRutVacio || errorRutExiste || errorRutInvalido)
+              Padding(
+                padding: const EdgeInsets.only(top: 7.0, left: 30.0),
+                child: Text(
+                  errorRutVacio
+                      ? 'Por favor, ingrese un rut.'
+                      : errorRutInvalido
+                          ? 'Ingrese un rut válido.'
+                          : 'El rut ya está registrado en el sistema.',
+                  style: const TextStyle(color: AppColors.error),
+                ),
               ),
             Row(
               children: [
@@ -155,12 +194,6 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.only(
-                    left: 30.0,
-                    top: 30.0,
-                  ),
-                ),
               ],
             ),
             Container(
@@ -172,14 +205,25 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 onSaved: (value) {
                   nombresValue = value ?? '';
                 },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
+                onChanged: (value) {
+                  if (value.isEmpty) {
                     setState(() {
-                      errorNombre = true;
+                      errorNombreVacio = true;
                     });
                   } else {
                     setState(() {
-                      errorNombre = false;
+                      errorNombreVacio = false;
+                    });
+                  }
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    setState(() {
+                      errorNombreVacio = true;
+                    });
+                  } else {
+                    setState(() {
+                      errorNombreVacio = false;
                       nombresValue = value;
                     });
                   }
@@ -206,7 +250,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 ),
               ),
             ),
-            if (errorNombre)
+            if (errorNombreVacio)
               const Padding(
                 padding: EdgeInsets.only(top: 7.0, left: 30.0),
                 child: Text('Por favor, ingrese su nombre',
@@ -228,12 +272,6 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.only(
-                    left: 30.0,
-                    top: 30.0,
-                  ),
-                ),
               ],
             ),
             Container(
@@ -245,14 +283,25 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 onSaved: (value) {
                   apellidoPatValue = value ?? '';
                 },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
+                onChanged: (value) {
+                  if (value.isEmpty) {
                     setState(() {
-                      errorApePat = true;
+                      errorApePatVacio = true;
                     });
                   } else {
                     setState(() {
-                      errorApePat = false;
+                      errorApePatVacio = false;
+                    });
+                  }
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    setState(() {
+                      errorApePatVacio = true;
+                    });
+                  } else {
+                    setState(() {
+                      errorApePatVacio = false;
                       apellidoPatValue = value;
                     });
                   }
@@ -279,7 +328,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 ),
               ),
             ),
-            if (errorApePat)
+            if (errorApePatVacio)
               const Padding(
                 padding: EdgeInsets.only(top: 7.0, left: 30.0),
                 child: Text('Por favor, ingrese su apellido paterno',
@@ -301,12 +350,6 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.only(
-                    left: 30.0,
-                    top: 30.0,
-                  ),
-                ),
               ],
             ),
             Container(
@@ -318,14 +361,25 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 onSaved: (value) {
                   apellidoMatValue = value ?? '';
                 },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
+                onChanged: (value) {
+                  if (value.isEmpty) {
                     setState(() {
-                      errorApeMat = true;
+                      errorApeMatVacio = true;
                     });
                   } else {
                     setState(() {
-                      errorApeMat = false;
+                      errorApeMatVacio = false;
+                    });
+                  }
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    setState(() {
+                      errorApeMatVacio = true;
+                    });
+                  } else {
+                    setState(() {
+                      errorApeMatVacio = false;
                       apellidoMatValue = value;
                     });
                   }
@@ -352,7 +406,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 ),
               ),
             ),
-            if (errorApeMat)
+            if (errorApeMatVacio)
               const Padding(
                 padding: EdgeInsets.only(top: 7.0, left: 30.0),
                 child: Text('Por favor, ingrese su apellido materno',
@@ -373,12 +427,6 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                       color: AppColors.black,
                       fontSize: 20,
                     ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.only(
-                    left: 30.0,
-                    top: 30.0,
                   ),
                 ),
               ],
@@ -411,20 +459,31 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                   ),
                   fillColor: AppColors.inputs,
                   suffixIcon:
-                      Icon(Icons.calendar_today), // Icono del calendario
+                      Icon(Icons.calendar_today, color: AppColors.icons),
                 ),
                 readOnly: true,
                 onTap: () {
                   _seleccionarFecha();
                 },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
+                onChanged: (value) {
+                  if (value.isEmpty) {
                     setState(() {
-                      errorFec = true;
+                      errorFecVacio = true;
                     });
                   } else {
                     setState(() {
-                      errorFec = false;
+                      errorFecVacio = false;
+                    });
+                  }
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    setState(() {
+                      errorFecVacio = true;
+                    });
+                  } else {
+                    setState(() {
+                      errorFecVacio = false;
                       dateValue = value;
                     });
                   }
@@ -432,7 +491,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 },
               ),
             ),
-            if (errorFec)
+            if (errorFecVacio)
               const Padding(
                 padding: EdgeInsets.only(top: 7.0, left: 30.0),
                 child: Text('Por favor, ingrese su fecha de nacimiento',
@@ -454,12 +513,6 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.only(
-                    left: 30.0,
-                    top: 30.0,
-                  ),
-                ),
               ],
             ),
             Container(
@@ -479,11 +532,10 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: femeninoColor,
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(20.0), // Radio de la esquina
+                        borderRadius: BorderRadius.circular(20.0),
                       ),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 15.0, vertical: 10.0), // Relleno interno
+                          horizontal: 15.0, vertical: 10.0),
                       fixedSize: const Size(110.0, 25.0),
                     ),
                     child: Text('Femenino',
@@ -506,11 +558,10 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: masculinoColor,
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(20.0), // Radio de la esquina
+                        borderRadius: BorderRadius.circular(20.0),
                       ),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 15.0, vertical: 10.0), // Relleno interno
+                          horizontal: 15.0, vertical: 10.0),
                       fixedSize: const Size(110.0, 25.0),
                     ),
                     child: Text('Masculino',
@@ -533,11 +584,10 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: otroColor,
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(20.0), // Radio de la esquina
+                        borderRadius: BorderRadius.circular(20.0),
                       ),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 15.0, vertical: 10.0), // Relleno interno
+                          horizontal: 15.0, vertical: 10.0),
                       fixedSize: const Size(110.0, 25.0),
                     ),
                     child: Text('Otro',
@@ -566,12 +616,6 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.only(
-                    left: 30.0,
-                    top: 30.0,
-                  ),
-                ),
               ],
             ),
             Container(
@@ -583,15 +627,46 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 onSaved: (value) {
                   correoValue = value ?? '';
                 },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
+                onChanged: (value) {
+                  if (value.isEmpty) {
                     setState(() {
-                      errorCorreo = true;
+                      errorCorreoVacio = true;
+                    });
+                  } else if (!validarCorreo(value)) {
+                    setState(() {
+                      errorCorreoVacio = false;
+                      errorCorreoExiste = false;
+                      errorCorreoInvalido = true;
                     });
                   } else {
+                    checkIfCorreoExists(value).then((correoExists) {
+                      setState(() {
+                        errorCorreoExiste = correoExists;
+                        errorCorreoVacio = false;
+                        errorCorreoInvalido = false;
+                      });
+                    });
+                  }
+                },
+                validator: (value) {
+                  // Validar si el campo está vacío
+                  if (value == null || value.isEmpty) {
                     setState(() {
-                      errorCorreo = false;
-                      correoValue = value;
+                      errorCorreoVacio = true;
+                    });
+                  } else if (!validarCorreo(value)) {
+                    setState(() {
+                      errorCorreoVacio = false;
+                      errorCorreoExiste = false;
+                      errorCorreoInvalido = true;
+                    });
+                  } else {
+                    checkIfCorreoExists(value).then((correoExists) {
+                      setState(() {
+                        errorCorreoExiste = correoExists;
+                        errorCorreoVacio = false;
+                        errorCorreoInvalido = false;
+                      });
                     });
                   }
                   return null;
@@ -617,11 +692,17 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 ),
               ),
             ),
-            if (errorCorreo)
-              const Padding(
-                padding: EdgeInsets.only(top: 7.0, left: 30.0),
-                child: Text('Por favor, ingrese su correo electrónico',
-                    style: TextStyle(color: AppColors.error)),
+            if (errorCorreoVacio || errorCorreoExiste || errorCorreoInvalido)
+              Padding(
+                padding: const EdgeInsets.only(top: 7.0, left: 30.0),
+                child: Text(
+                  errorCorreoVacio
+                      ? 'Por favor, ingrese un correo electrónico.'
+                      : errorCorreoInvalido
+                          ? 'Ingrese un correo electrónico válido.'
+                          : 'El correo electrónico ya está registrado en el sistema.',
+                  style: const TextStyle(color: AppColors.error),
+                ),
               ),
             Row(
               children: [
@@ -639,12 +720,6 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.only(
-                    left: 30.0,
-                    top: 30.0,
-                  ),
-                ),
               ],
             ),
             Container(
@@ -656,15 +731,45 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 onSaved: (value) {
                   telefonoValue = value ?? '';
                 },
+                onChanged: (value) {
+                  if (value.isEmpty) {
+                    setState(() {
+                      errorTelefonoVacio = true;
+                    });
+                  } else if (!validarTelefono(value)) {
+                    setState(() {
+                      errorTelefonoVacio = false;
+                      errorTelefonoExiste = false;
+                      errorTelefonoInvalido = true;
+                    });
+                  } else {
+                    checkIfTelefonoExists(value).then((telefonoExists) {
+                      setState(() {
+                        errorTelefonoExiste = telefonoExists;
+                        errorTelefonoVacio = false;
+                        errorTelefonoInvalido = false;
+                      });
+                    });
+                  }
+                },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     setState(() {
-                      errorTelefono = true;
+                      errorTelefonoVacio = true;
+                    });
+                  } else if (!validarTelefono(value)) {
+                    setState(() {
+                      errorTelefonoVacio = false;
+                      errorTelefonoExiste = false;
+                      errorTelefonoInvalido = true;
                     });
                   } else {
-                    setState(() {
-                      errorTelefono = false;
-                      telefonoValue = value;
+                    checkIfTelefonoExists(value).then((telefonoExists) {
+                      setState(() {
+                        errorTelefonoExiste = telefonoExists;
+                        errorTelefonoVacio = false;
+                        errorTelefonoInvalido = false;
+                      });
                     });
                   }
                   return null;
@@ -690,50 +795,97 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 ),
               ),
             ),
-            if (errorTelefono)
-              const Padding(
-                padding: EdgeInsets.only(top: 7.0, left: 30.0),
-                child: Text('Por favor, ingrese su teléfono móvil',
-                    style: TextStyle(color: AppColors.error)),
+            if (errorTelefonoVacio ||
+                errorTelefonoExiste ||
+                errorTelefonoInvalido)
+              Padding(
+                padding: const EdgeInsets.only(top: 7.0, left: 30.0),
+                child: Text(
+                  errorTelefonoVacio
+                      ? 'Por favor, ingrese un número telefónico.'
+                      : errorTelefonoInvalido
+                          ? 'Ingrese un número telefónico válido.'
+                          : 'El número telefónico ya está registrado en el sistema.',
+                  style: const TextStyle(color: AppColors.error),
+                ),
               ),
-            ElevatedButton(
-              onPressed: () async {
-                if (_formKey.currentState?.validate() ?? false) {
-                  _formKey.currentState?.save();
-                  if (!errorRut &&
-                      !errorNombre &&
-                      !errorApePat &&
-                      !errorApeMat &&
-                      !errorFec &&
-                      !errorCorreo &&
-                      !errorTelefono) {
-                    await enviarDatosAFirebase();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CrearClaveScreen(
-                          rut: rutValue,
-                          nombres: nombresValue,
-                          apellidoPat: apellidoPatValue,
-                          apellidoMat: apellidoMatValue,
-                          fechaNacimiento: dateValue,
-                          genero: generoValue,
-                          correo: correoValue,
-                          telefono: telefonoValue,
+            const SizedBox(height: 25),
+            Column(
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    if (_formKey.currentState?.validate() ?? false) {
+                      _formKey.currentState?.save();
+                      if (!errorRutVacio &&
+                          !errorRutExiste &&
+                          !errorRutInvalido &&
+                          !errorNombreVacio &&
+                          !errorApePatVacio &&
+                          !errorApeMatVacio &&
+                          !errorFecVacio &&
+                          !errorCorreoVacio &&
+                          !errorCorreoExiste &&
+                          !errorCorreoInvalido &&
+                          !errorTelefonoVacio &&
+                          !errorTelefonoExiste &&
+                          !errorTelefonoInvalido) {
+                        // ignore: use_build_context_synchronously
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CrearClaveScreen(
+                              rut: rutValue,
+                              nombres: nombresValue,
+                              apellidoPat: apellidoPatValue,
+                              apellidoMat: apellidoMatValue,
+                              fechaNacimiento: dateValue,
+                              genero: generoValue,
+                              correo: correoValue,
+                              telefono: telefonoValue,
+                            ),
+                          ),
+                        );
+                      } else {
+                        _scrollController.animateTo(
+                          0.0,
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    backgroundColor: AppColors.buttons,
+                    padding: const EdgeInsets.all(10.0),
+                    fixedSize: const Size(250, 60),
+                    foregroundColor: AppColors.blue_900,
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Cree su contraseña',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
                         ),
                       ),
-                    );
-                  } else {
-                    _scrollController.animateTo(
-                      0.0,
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.easeInOut,
-                    );
-                  }
-                }
-              },
-              child: const Text('Cree su contraseña'),
+                      SizedBox(width: 8.0),
+                      Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
+
+            const SizedBox(height: 25),
           ],
         ),
       ),
@@ -753,32 +905,6 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
       setState(() {
         _dateController.text = formattedDate;
       });
-    }
-  }
-
-  Future<void> enviarDatosAFirebase() async {
-    try {
-      // Accede a tu colección en Firestore
-      CollectionReference paciente =
-          FirebaseFirestore.instance.collection('paciente');
-
-      String idPaciente = rutValue;
-
-      await paciente.doc(idPaciente).set({
-        'rut': rutValue,
-        'nombres': nombresValue,
-        'apellido_paterno': apellidoPatValue,
-        'apellido_materno': apellidoMatValue,
-        'fecha_nacimiento': dateValue,
-        'genero': generoValue,
-        'correo': correoValue,
-        'telefono': telefonoValue,
-      });
-
-      print('Datos enviados a Firebase con éxito.');
-    } catch (e) {
-      print('Error al enviar datos a Firebase: $e');
-      // Puedes manejar el error según tus necesidades
     }
   }
 }
