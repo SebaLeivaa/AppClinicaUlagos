@@ -1,24 +1,26 @@
-// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, avoid_print
-import 'package:clinica_ulagos_app/consultasFirebase/consultas.dart';
+import 'package:clinica_ulagos_app/screens/inicioSesionValido/detalle_cita.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:clinica_ulagos_app/theme/colors.dart';
 import 'package:clinica_ulagos_app/administrarSesiones/sesiones.dart';
 import 'package:clinica_ulagos_app/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:clinica_ulagos_app/screens/inicioSesionValido/mi_historial_medico.dart';
+import 'package:clinica_ulagos_app/screens/inicioSesionValido/mis_reservas.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:clinica_ulagos_app/consultasFirebase/consultas.dart';
 
-class MisReservasScreen extends StatefulWidget {
-  const MisReservasScreen({Key? key}) : super(key: key);
+class MiHistorialMedicoScreen extends StatefulWidget {
+  const MiHistorialMedicoScreen({Key? key}) : super(key: key);
 
   @override
-  _MisReservasScreenState createState() => _MisReservasScreenState();
+  // ignore: library_private_types_in_public_api
+  _MiHistorialMedicoScreenState createState() =>
+      _MiHistorialMedicoScreenState();
 }
 
-class _MisReservasScreenState extends State<MisReservasScreen> {
+class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
   final SessionManager _sessionManager = SessionManager();
-  List<Map<String, dynamic>> datosReservaUsuario = [];
+  List<Map<String, dynamic>> datosHistorialUsuario = [];
   String? rutUsuario;
   String? nombreUsuario;
   String? correoUsuario;
@@ -32,7 +34,12 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
   void initState() {
     super.initState();
     _sessionManager.startSessionTimer(context);
-    cargarDatos();
+
+    cargarDatosUsuario().then((List<Map<String, dynamic>> result) {
+      setState(() {
+        datosHistorialUsuario = result;
+      });
+    });
   }
 
   @override
@@ -145,13 +152,48 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          const SizedBox(width: 8),
+                          Container(
+                            // Puedes ajustar el ancho máximo de la caja aquí
+                            constraints: const BoxConstraints(
+                                maxWidth: 150, maxHeight: 40),
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const MisReservasScreen(),
+                                  ),
+                                );
+                              },
+                              child: Ink(
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(6),
+                                  child: Center(
+                                    child: Text(
+                                      'Mis reservas',
+                                      style: TextStyle(
+                                        color: AppColors.grey,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                           const SizedBox(
-                            width: 30,
+                            width: 10,
                           ),
                           Container(
                               // Puedes ajustar el ancho máximo de la caja aquí
                               constraints: const BoxConstraints(
-                                  maxWidth: 150, maxHeight: 40),
+                                  maxWidth: 200, maxHeight: 40),
                               child: GestureDetector(
                                 onTap: () {
                                   // No hay acción cuando se hace clic
@@ -165,7 +207,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                     padding: EdgeInsets.all(6),
                                     child: Center(
                                       child: Text(
-                                        'Mis reservas',
+                                        'Mi historial médico',
                                         style: TextStyle(
                                           color: AppColors.white,
                                           fontSize: 18,
@@ -175,51 +217,16 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                   ),
                                 ),
                               )),
-                          const SizedBox(width: 8),
-                          Container(
-                            // Puedes ajustar el ancho máximo de la caja aquí
-                            constraints: const BoxConstraints(
-                                maxWidth: 200, maxHeight: 40),
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const MiHistorialMedicoScreen(),
-                                  ),
-                                );
-                              },
-                              child: Ink(
-                                decoration: BoxDecoration(
-                                  color: AppColors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Padding(
-                                  padding: EdgeInsets.all(6),
-                                  child: Center(
-                                    child: Text(
-                                      'Mi historial médico',
-                                      style: TextStyle(
-                                        color: AppColors.grey,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 10.0),
+                    const SizedBox(height: 10),
                     const Padding(
                       padding: EdgeInsets.only(left: 28.0),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Reservas agendadas',
+                          'Historial de reservas',
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.black,
@@ -230,7 +237,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                     const SizedBox(
                       height: 12.0,
                     ),
-                    if (datosReservaUsuario.isNotEmpty)
+                    if (datosHistorialUsuario.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(
                           left: 0.0,
@@ -242,11 +249,11 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                               enableInfiniteScroll: false,
                               viewportFraction: 0.90,
                             ),
-                            items: datosReservaUsuario.map(
+                            items: datosHistorialUsuario.map(
                               (i) {
-                                String idCita = i['id_cita'];
                                 Timestamp formatoTimeStamp = i['fecha'];
                                 DateTime fecha = formatoTimeStamp.toDate();
+                                String detalle = i['detalle'];
                                 List<String> nombreDia = [
                                   'Lunes',
                                   'Martes',
@@ -409,9 +416,26 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                                           width: 200,
                                                           child: ElevatedButton(
                                                             onPressed: () {
-                                                              _mostrarVentanaEmergente(
-                                                                  context,
-                                                                  idCita);
+                                                              Navigator
+                                                                  .pushReplacement(
+                                                                context,
+                                                                MaterialPageRoute(
+                                                                  builder:
+                                                                      (context) =>
+                                                                          DetalleCitaScreen(
+                                                                    citaDetalle:
+                                                                        detalle,
+                                                                    fullNameProfesional:
+                                                                        '${i['nombre_profesional']} ${i['apellido_paterno_profesional']} ${i['apellido_materno_profesional'].substring(0, 1)}.',
+                                                                    fullDateCita:
+                                                                        '${nombreDia[numeroDiaDeLaSemana - 1]} ${numeroDia.toString()} de ${nombreMes[numeroMes - 1]} del ${anio.toString()}',
+                                                                    fullHourCita:
+                                                                        '${hora.toString().padLeft(2, '0')}:${minutos.toString().padLeft(2, '0')}',
+                                                                    especialidad:
+                                                                        i['especialidad'],
+                                                                  ),
+                                                                ),
+                                                              );
                                                             },
                                                             style:
                                                                 ElevatedButton
@@ -425,7 +449,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                                               ),
                                                               backgroundColor:
                                                                   AppColors
-                                                                      .error,
+                                                                      .blue_500,
                                                               padding:
                                                                   const EdgeInsets
                                                                       .all(0.0),
@@ -438,22 +462,35 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                                             ),
                                                             child:
                                                                 const Padding(
-                                                              padding:
-                                                                  EdgeInsets
-                                                                      .all(6),
-                                                              child: Center(
-                                                                child: Text(
-                                                                  'Anular Hora',
-                                                                  style:
-                                                                      TextStyle(
-                                                                    color: AppColors
-                                                                        .white,
-                                                                    fontSize:
-                                                                        18,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
+                                                                    padding:
+                                                                        EdgeInsets
+                                                                            .all(
+                                                                                6),
+                                                                    child:
+                                                                        Center(
+                                                                      child:
+                                                                          Row(
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment.center,
+                                                                        children: [
+                                                                          Text(
+                                                                            'Ver detalle',
+                                                                            style:
+                                                                                TextStyle(
+                                                                              color: AppColors.white,
+                                                                              fontSize: 18,
+                                                                            ),
+                                                                          ),
+                                                                          SizedBox(
+                                                                              width: 8),
+                                                                          Icon(
+                                                                            Icons.file_copy, // Puedes cambiar el icono según tus necesidades
+                                                                            color:
+                                                                                AppColors.white,
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    )),
                                                           ),
                                                         ),
                                                       ]),
@@ -470,14 +507,13 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                 ),
               );
             } else {
-              // La sesión ha expirado, redirige a la pantalla de inicio de sesión
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const LoginPage(),
                 ),
               );
-              return Container(); // Puedes devolver un contenedor vacío o cualquier otro widget aquí
+              return Container();
             }
           }
         },
@@ -501,104 +537,9 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
       fecNacUsuario = prefs.getString('fecNacUsuario');
     });
 
-    List<Map<String, dynamic>> datosReservaUsuario =
-        await obtenerReservasUsuarios(rutUsuario!);
+    List<Map<String, dynamic>> datosHistorialUsuario =
+        await obtenerHistorialUsuarios(rutUsuario!);
 
-    return datosReservaUsuario;
-  }
-
-  void _mostrarVentanaEmergente(BuildContext context, String idCita) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.white,
-          content: Container(
-            height: 150.0, // Ajusta la altura según tus necesidades
-            child: Column(
-              mainAxisAlignment:
-                  MainAxisAlignment.start, // Centra verticalmente
-              children: [
-                Container(
-                  height: 40,
-                  width: double.infinity,
-                  child: Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.center, // Centra horizontalmente
-                    children: [
-                      const Icon(
-                        Icons.warning_rounded,
-                        color: AppColors.warning,
-                        size: 35,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Atención',
-                        style: const TextStyle(
-                          color: AppColors.black,
-                          fontSize: 22,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 20),
-                Text(
-                  '¿Estas seguro que desea anular esta reserva médica?',
-                  style: TextStyle(color: AppColors.black, fontSize: 16),
-                  textAlign: TextAlign.center,
-                )
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
-                    onPressed: () async {
-                      Navigator.of(context).pop();
-                      await deleteDocument(idCita);
-                      cargarDatos();
-                    },
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.only(left: 45, right: 45),
-                      backgroundColor: AppColors.error,
-                    ),
-                    child: Text(
-                      'Si',
-                      style: TextStyle(color: AppColors.white),
-                    ),
-                  ),
-                  Spacer(), // Añade un Spacer para el espacio entre los botones
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.only(left: 45, right: 45),
-                      backgroundColor: Colors.green,
-                    ),
-                    child: Text(
-                      'No',
-                      style: TextStyle(color: AppColors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void cargarDatos() {
-    cargarDatosUsuario().then((List<Map<String, dynamic>> result) {
-      setState(() {
-        datosReservaUsuario = result;
-      });
-    });
+    return datosHistorialUsuario;
   }
 }

@@ -29,6 +29,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -365,8 +366,9 @@ class _LoginPageState extends State<LoginPage> {
                         onTap: () async {
                           if (_formKey.currentState?.validate() ?? false) {
                             _formKey.currentState?.save();
+                            obtenerReservasUsuarios(rutValue);
                             if (await autenticarUsuario(rutValue, claveValue)) {
-                              await guardarSesion();
+                              await guardarSesion(rutValue);
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(

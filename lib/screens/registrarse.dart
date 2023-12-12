@@ -57,7 +57,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.blue_900,
         title: const Text(
-          'REGISTRARSE',
+          'Registrarse',
           style: TextStyle(
             color: AppColors.white,
           ),

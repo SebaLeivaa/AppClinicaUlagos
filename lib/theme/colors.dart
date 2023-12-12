@@ -25,5 +25,8 @@ class AppColors {
   static const Color error2 = Color(0XFFCC0000);
   static const Color check = Color(0XFF3370FF);
   static const Color icons = Color(0XFF1E3050);
-  // ... Otros colores
+  static const Color buttons2 = Color(0XFFFF7F00);
+  static const Color warning = Color(0XFFFF7F00);
+  static const Color warning2 = Color(0XFFFFCC00);
+  static const Color buttons3 = Color(0XFF008000);
 }

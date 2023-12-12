@@ -41,6 +41,7 @@ dependencies:
   cloud_firestore: ^4.13.3
   firebase_auth: ^4.15.2
   shared_preferences: ^2.2.2
+  carousel_slider: ^4.2.1
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +61,7 @@ dev_dependencies:
 flutter:
   assets: 
     - lib/img/logoClinica.png
+    - lib/img/default.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
