@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:clinica_ulagos_app/screens/inicioSesionValido/mis_reservas.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:clinica_ulagos_app/consultasFirebase/consultas.dart';
+import 'package:clinica_ulagos_app/screens/inicioSesionValido/busqueda_de_hora.dart';
 
 class MiHistorialMedicoScreen extends StatefulWidget {
   const MiHistorialMedicoScreen({Key? key}) : super(key: key);
@@ -110,7 +111,15 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                           const SizedBox(height: 30),
                           Center(
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const BusquedaHoraScreen(),
+                                  ),
+                                );
+                              },
                               style: ElevatedButton.styleFrom(
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(50),
@@ -332,7 +341,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                                                         const SizedBox(
                                                             width: 8),
                                                         Text(
-                                                          '${nombreDia[numeroDiaDeLaSemana - 1]} ${numeroDia.toString()} de ${nombreMes[numeroMes - 1]} del ${anio.toString()}',
+                                                          '${nombreDia[numeroDiaDeLaSemana - 1]} ${numeroDia.toString().padLeft(2, '0')} de ${nombreMes[numeroMes - 1]} del ${anio.toString()}',
                                                           style: const TextStyle(
                                                               color: AppColors
                                                                   .white,
@@ -369,7 +378,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                                                             height: 4,
                                                           ),
                                                           Text(
-                                                            i['especialidad']
+                                                            i['nombre_especialidad']
                                                                 .toString(),
                                                             style:
                                                                 const TextStyle(
@@ -432,7 +441,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                                                                     fullHourCita:
                                                                         '${hora.toString().padLeft(2, '0')}:${minutos.toString().padLeft(2, '0')}',
                                                                     especialidad:
-                                                                        i['especialidad'],
+                                                                        i['nombre_especialidad'],
                                                                   ),
                                                                 ),
                                                               );

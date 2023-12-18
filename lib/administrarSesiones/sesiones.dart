@@ -58,7 +58,7 @@ Future<bool> verificarSesion() async {
     if (horaInicioSesion.isNotEmpty) {
       DateTime inicioSesion = DateTime.parse(horaInicioSesion);
       // Duración de sesión deseada en minutos
-      int duracionSesionMinutos = 5;
+      int duracionSesionMinutos = 30;
       // Compara la diferencia en minutos
       return DateTime.now().difference(inicioSesion).inMinutes <
           duracionSesionMinutos;

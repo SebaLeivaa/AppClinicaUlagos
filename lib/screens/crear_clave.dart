@@ -1,8 +1,9 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, avoid_print
 import 'package:clinica_ulagos_app/screens/registrarse_exitoso.dart';
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:clinica_ulagos_app/consultasFirebase/actualizar_datos.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CrearClaveScreen extends StatefulWidget {
   const CrearClaveScreen(
@@ -362,15 +363,35 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
                       _formKey.currentState?.save();
                       if (!errorClaveGeneral &&
                           !errorClaveVacia &&
+                          // ignore: duplicate_ignore
                           !errorClaveIguales) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const RegistrarseExitosoScreen(),
-                          ),
+                        final FirebaseAuth _auth = FirebaseAuth.instance;
+                        await _auth.createUserWithEmailAndPassword(
+                          email: widget.correo,
+                          password: claveValue,
                         );
-                        await enviarDatosAFirebase();
+                        bool exito = await enviarDatosAFirebase(
+                            widget.rut,
+                            widget.nombres,
+                            widget.apellidoPat,
+                            widget.apellidoMat,
+                            widget.fechaNacimiento,
+                            widget.genero,
+                            widget.correo,
+                            widget.telefono,
+                            claveValue);
+                        // ignore: use_build_context_synchronously
+                        if (exito) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const RegistrarseExitosoScreen(),
+                            ),
+                          );
+                        } else {
+                          print('Error no se ha podido registrarse');
+                        }
                       }
                     } else {}
                   },
@@ -407,40 +428,5 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> enviarDatosAFirebase() async {
-    try {
-      CollectionReference paciente =
-          FirebaseFirestore.instance.collection('paciente');
-
-      String idPaciente = widget.rut;
-
-      // Verifica si el documento ya existe antes de intentar agregarlo
-      bool existeDocumento =
-          await paciente.doc(idPaciente).get().then((doc) => doc.exists);
-
-      if (!existeDocumento) {
-        // Si el documento no existe se agrega
-        await paciente.doc(idPaciente).set({
-          'rut': widget.rut,
-          'nombres': widget.nombres,
-          'apellido_paterno': widget.apellidoPat,
-          'apellido_materno': widget.apellidoMat,
-          'fecha_nacimiento': widget.fechaNacimiento,
-          'genero': widget.genero,
-          'correo': widget.correo,
-          'telefono': widget.telefono,
-          'clave': claveValue
-        });
-      } else {
-        // ignore: avoid_print
-        print(
-            'El documento con el Rut $idPaciente ya existe en la base de datos.');
-      }
-    } catch (e) {
-      // ignore: avoid_print
-      print('Error al enviar datos a Firebase: $e');
-    }
   }
 }

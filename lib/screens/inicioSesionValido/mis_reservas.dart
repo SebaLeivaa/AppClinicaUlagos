@@ -1,5 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, avoid_print
+import 'package:clinica_ulagos_app/consultasFirebase/actualizar_datos.dart';
 import 'package:clinica_ulagos_app/consultasFirebase/consultas.dart';
+import 'package:clinica_ulagos_app/screens/inicioSesionValido/busqueda_de_hora.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:clinica_ulagos_app/theme/colors.dart';
@@ -103,7 +105,15 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                           const SizedBox(height: 30),
                           Center(
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const BusquedaHoraScreen(),
+                                  ),
+                                );
+                              },
                               style: ElevatedButton.styleFrom(
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(50),
@@ -149,7 +159,6 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                             width: 30,
                           ),
                           Container(
-                              // Puedes ajustar el ancho máximo de la caja aquí
                               constraints: const BoxConstraints(
                                   maxWidth: 150, maxHeight: 40),
                               child: GestureDetector(
@@ -325,7 +334,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                                         const SizedBox(
                                                             width: 8),
                                                         Text(
-                                                          '${nombreDia[numeroDiaDeLaSemana - 1]} ${numeroDia.toString()} de ${nombreMes[numeroMes - 1]} del ${anio.toString()}',
+                                                          '${nombreDia[numeroDiaDeLaSemana - 1]} ${numeroDia.toString().padLeft(2, '0')} de ${nombreMes[numeroMes - 1]} del ${anio.toString()}',
                                                           style: const TextStyle(
                                                               color: AppColors
                                                                   .white,
@@ -362,7 +371,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                                             height: 4,
                                                           ),
                                                           Text(
-                                                            i['especialidad']
+                                                            i['nombre_especialidad']
                                                                 .toString(),
                                                             style:
                                                                 const TextStyle(
@@ -513,28 +522,28 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: AppColors.white,
-          content: Container(
+          content: const SizedBox(
             height: 150.0, // Ajusta la altura según tus necesidades
             child: Column(
               mainAxisAlignment:
                   MainAxisAlignment.start, // Centra verticalmente
               children: [
-                Container(
+                SizedBox(
                   height: 40,
                   width: double.infinity,
                   child: Row(
                     mainAxisAlignment:
                         MainAxisAlignment.center, // Centra horizontalmente
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.warning_rounded,
                         color: AppColors.warning,
                         size: 35,
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Text(
                         'Atención',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.black,
                           fontSize: 22,
                         ),
@@ -559,28 +568,28 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                   TextButton(
                     onPressed: () async {
                       Navigator.of(context).pop();
-                      await deleteDocument(idCita);
+                      await anularHora(idCita);
                       cargarDatos();
                     },
                     style: TextButton.styleFrom(
-                      padding: EdgeInsets.only(left: 45, right: 45),
+                      padding: const EdgeInsets.only(left: 45, right: 45),
                       backgroundColor: AppColors.error,
                     ),
-                    child: Text(
+                    child: const Text(
                       'Si',
                       style: TextStyle(color: AppColors.white),
                     ),
                   ),
-                  Spacer(), // Añade un Spacer para el espacio entre los botones
+                  const Spacer(), // Añade un Spacer para el espacio entre los botones
                   TextButton(
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
                     style: TextButton.styleFrom(
-                      padding: EdgeInsets.only(left: 45, right: 45),
+                      padding: const EdgeInsets.only(left: 45, right: 45),
                       backgroundColor: Colors.green,
                     ),
-                    child: Text(
+                    child: const Text(
                       'No',
                       style: TextStyle(color: AppColors.white),
                     ),

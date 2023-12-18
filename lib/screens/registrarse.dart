@@ -436,9 +436,6 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
               padding:
                   const EdgeInsets.only(left: 30.0, top: 10.0, right: 30.0),
               child: TextFormField(
-                onSaved: (value) {
-                  dateValue = value ?? '';
-                },
                 controller: _dateController,
                 style: const TextStyle(color: AppColors.black),
                 decoration: const InputDecoration(
@@ -462,6 +459,9 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                       Icon(Icons.calendar_today, color: AppColors.icons),
                 ),
                 readOnly: true,
+                onSaved: (value) {
+                  dateValue = value ?? '';
+                },
                 onTap: () {
                   _seleccionarFecha();
                 },
@@ -518,86 +518,89 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
             Container(
               padding:
                   const EdgeInsets.only(left: 30.0, top: 10.0, right: 30.0),
-              child: Row(
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        generoValue = 'F';
-                        femeninoColor = AppColors.blue_400;
-                        masculinoColor = AppColors.inputs;
-                        otroColor = AppColors.inputs;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: femeninoColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          generoValue = 'F';
+                          femeninoColor = AppColors.blue_400;
+                          masculinoColor = AppColors.inputs;
+                          otroColor = AppColors.inputs;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: femeninoColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15.0, vertical: 10.0),
+                        fixedSize: const Size(110.0, 25.0),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 15.0, vertical: 10.0),
-                      fixedSize: const Size(110.0, 25.0),
+                      child: Text('Femenino',
+                          style: TextStyle(
+                            color: generoValue == 'F'
+                                ? AppColors.white
+                                : AppColors.black,
+                          )),
                     ),
-                    child: Text('Femenino',
-                        style: TextStyle(
-                          color: generoValue == 'F'
-                              ? AppColors.white
-                              : AppColors.black,
-                        )),
-                  ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        generoValue = 'M';
-                        femeninoColor = AppColors.inputs;
-                        masculinoColor = AppColors.blue_400;
-                        otroColor = AppColors.inputs;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: masculinoColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          generoValue = 'M';
+                          femeninoColor = AppColors.inputs;
+                          masculinoColor = AppColors.blue_400;
+                          otroColor = AppColors.inputs;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: masculinoColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15.0, vertical: 10.0),
+                        fixedSize: const Size(110.0, 25.0),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 15.0, vertical: 10.0),
-                      fixedSize: const Size(110.0, 25.0),
+                      child: Text('Masculino',
+                          style: TextStyle(
+                            color: generoValue == 'M'
+                                ? AppColors.white
+                                : AppColors.black,
+                          )),
                     ),
-                    child: Text('Masculino',
-                        style: TextStyle(
-                          color: generoValue == 'M'
-                              ? AppColors.white
-                              : AppColors.black,
-                        )),
-                  ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        generoValue = 'O';
-                        femeninoColor = AppColors.inputs;
-                        masculinoColor = AppColors.inputs;
-                        otroColor = AppColors.blue_400;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: otroColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          generoValue = 'O';
+                          femeninoColor = AppColors.inputs;
+                          masculinoColor = AppColors.inputs;
+                          otroColor = AppColors.blue_400;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: otroColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15.0, vertical: 10.0),
+                        fixedSize: const Size(110.0, 25.0),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 15.0, vertical: 10.0),
-                      fixedSize: const Size(110.0, 25.0),
+                      child: Text('Otro',
+                          style: TextStyle(
+                            color: generoValue == 'O'
+                                ? AppColors.white
+                                : AppColors.black,
+                          )),
                     ),
-                    child: Text('Otro',
-                        style: TextStyle(
-                          color: generoValue == 'O'
-                              ? AppColors.white
-                              : AppColors.black,
-                        )),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             Row(
@@ -829,19 +832,18 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                           !errorTelefonoVacio &&
                           !errorTelefonoExiste &&
                           !errorTelefonoInvalido) {
-                        // ignore: use_build_context_synchronously
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => CrearClaveScreen(
-                              rut: rutValue,
-                              nombres: nombresValue,
-                              apellidoPat: apellidoPatValue,
-                              apellidoMat: apellidoMatValue,
-                              fechaNacimiento: dateValue,
+                              rut: _rutController.text,
+                              nombres: _nombresController.text,
+                              apellidoPat: _apePatController.text,
+                              apellidoMat: _apeMatController.text,
+                              fechaNacimiento: _dateController.text,
                               genero: generoValue,
-                              correo: correoValue,
-                              telefono: telefonoValue,
+                              correo: _correoController.text,
+                              telefono: _telefonoController.text,
                             ),
                           ),
                         );
