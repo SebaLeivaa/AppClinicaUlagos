@@ -1,19 +1,20 @@
 // ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, avoid_print
 
 import 'package:clinica_ulagos_app/screens/inicioSesionValido/mis_reservas.dart';
+import 'package:firebase_auth/firebase_auth.dart'; //Autenticacion de usuario
 import 'package:flutter/material.dart';
-import 'theme/colors.dart';
+import 'theme/colors.dart'; //Paleta de colores de la app
 import 'screens/olvide_mi_clave.dart';
 import 'screens/registrarse.dart';
 import 'package:clinica_ulagos_app/funcionesValidaciones/validaciones.dart';
 import 'package:clinica_ulagos_app/consultasFirebase/consultas.dart';
-import 'package:clinica_ulagos_app/consultasFirebase/autenticar_usuario.dart';
 import 'package:clinica_ulagos_app/administrarSesiones/sesiones.dart';
 
 //Importaciones de firebase
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+//Se inicializa la aplicacion
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -28,21 +29,22 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Clinica Ulagos',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
       home: FutureBuilder<bool>(
+        //Se verifica si tiene una sesion activa
         future: verificarSesion(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const CircularProgressIndicator();
           } else {
             return snapshot.data == true
-                ? const MisReservasScreen()
-                : const LoginPage();
+                ? const MisReservasScreen() //Si se cumple lo redirige a la interfaz de mis reservas
+                : const LoginPage(); //Si no se cumple lo redirige a la interfaz principal
           }
         },
       ),
@@ -58,17 +60,20 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool obscureText = true;
-  final TextEditingController _rutController = TextEditingController();
+  bool obscureText = true; //Variable para manejar el mostrar y ocultar clave
+  //Controladores para manejear las entradas de texto en los campos
+  final TextEditingController _correoController = TextEditingController();
   final TextEditingController _claveController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final ScrollController _scrollController = ScrollController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  String rutValue = '';
+  String correoValue = '';
   String claveValue = '';
-  bool errorRutVacio = false;
-  bool errorRutInvalido = false;
-  bool errorRutExiste = false;
+  //Tipos de errores
+  bool errorCorreoVacio = false;
+  bool errorCorreoInvalido = false;
+  bool errorCorreoExiste = false;
   bool errorClave = false;
   bool errorClaveVacia = false;
 
@@ -79,8 +84,8 @@ class _LoginPageState extends State<LoginPage> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [AppColors.blue_400, AppColors.blue_900],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
         ),
         //Probando si no cambiar ListView por column y eliminar el controller
@@ -105,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                           top: 30.0,
                         ),
                         child: const Text(
-                          'Rut',
+                          'Correo electrónico',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
@@ -119,57 +124,60 @@ class _LoginPageState extends State<LoginPage> {
                     padding: const EdgeInsets.only(
                         left: 30.0, top: 10.0, right: 30.0),
                     child: TextFormField(
-                      controller: _rutController,
+                      controller: _correoController,
                       onSaved: (value) {
-                        rutValue = value ?? '';
+                        correoValue = value ?? '';
                       },
                       onChanged: (value) {
-                        if (!validarRut(value)) {
+                        //Manejo de errores en tiempo real, se verifica si tiene formato de correo
+                        if (!validarCorreo(value)) {
                           setState(() {
-                            errorRutInvalido = true;
-                            errorRutExiste = false;
-                            errorRutVacio = false;
+                            errorCorreoInvalido = true;
+                            errorCorreoExiste = false;
+                            errorCorreoVacio = false;
                             errorClave = false;
                             errorClaveVacia = false;
                           });
                         } else {
                           setState(() {
-                            errorRutInvalido = false;
-                            errorRutExiste = false;
-                            errorRutVacio = false;
+                            errorCorreoInvalido = false;
+                            errorCorreoExiste = false;
+                            errorCorreoVacio = false;
                             errorClaveVacia = false;
                             errorClave = false;
                           });
                         }
                       },
                       validator: (value) {
+                        //Validacion para el formulario
                         if (value == null || value.isEmpty) {
                           setState(() {
-                            errorRutVacio = true;
+                            errorCorreoVacio = true;
                             errorClaveVacia = false;
                           });
-                        } else if (!validarRut(value)) {
+                        } else if (!validarCorreo(value)) {
                           setState(() {
-                            errorRutInvalido = true;
-                            errorRutVacio = false;
+                            errorCorreoInvalido = true;
+                            errorCorreoVacio = false;
                             errorClaveVacia = false;
                             errorClave = false;
                           });
                         } else {
-                          checkIfRutExists(value).then((rutExists) {
-                            if (rutExists) {
+                          //Se verifica si el correo existe ya en nuestra base de datos
+                          checkIfCorreoExists(value).then((correoExists) {
+                            if (correoExists) {
                               setState(() {
-                                errorRutExiste = false;
-                                errorRutVacio = false;
-                                errorRutInvalido = false;
+                                errorCorreoExiste = false;
+                                errorCorreoVacio = false;
+                                errorCorreoInvalido = false;
                                 errorClaveVacia = false;
                                 errorClave = false;
                               });
                             } else {
                               setState(() {
-                                errorRutExiste = true;
-                                errorRutVacio = false;
-                                errorRutInvalido = false;
+                                errorCorreoExiste = true;
+                                errorCorreoVacio = false;
+                                errorCorreoInvalido = false;
                                 errorClaveVacia = false;
                                 errorClave = false;
                               });
@@ -180,7 +188,7 @@ class _LoginPageState extends State<LoginPage> {
                       },
                       style: const TextStyle(color: Colors.black),
                       decoration: const InputDecoration(
-                        hintText: 'Ej: 20589741-2',
+                        hintText: 'correo@dominio.cl',
                         hintStyle: TextStyle(color: Colors.grey),
                         filled: true,
                         enabledBorder: OutlineInputBorder(
@@ -198,17 +206,21 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  if (errorRutVacio || errorRutExiste || errorRutInvalido)
+                  //Manejo de errores, para mostrar el error que corresponda debajo del textFormField
+                  if (errorCorreoVacio ||
+                      errorCorreoExiste ||
+                      errorCorreoInvalido)
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Padding(
                         padding: const EdgeInsets.only(top: 7.0, left: 30.0),
+                        //Disntos mensajes de error
                         child: Text(
-                          errorRutVacio
-                              ? 'Por favor, ingrese un rut.'
-                              : errorRutInvalido
-                                  ? 'Ingrese un rut válido.'
-                                  : 'El rut no está registrado en el sistema.',
+                          errorCorreoVacio
+                              ? 'Por favor, ingrese un correo electrónico.'
+                              : errorCorreoInvalido
+                                  ? 'Ingrese un correo electrónico válido.'
+                                  : 'El correo electrónico no está registrado en el sistema.',
                           style: const TextStyle(color: AppColors.error2),
                         ),
                       ),
@@ -249,34 +261,6 @@ class _LoginPageState extends State<LoginPage> {
                         claveValue = value ?? '';
                       },
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          checkIfRutExists(rutValue).then((rutExists) {
-                            if (rutExists) {
-                              errorClaveVacia = true;
-                              errorClave = false;
-                            } else {
-                              errorClaveVacia = false;
-                              errorClave = false;
-                            }
-                          });
-                        } else {
-                          checkIfRutExists(rutValue).then((rutExists) {
-                            if (rutExists) {
-                              autenticarUsuario(rutValue, value)
-                                  .then((claveValida) {
-                                setState(() {
-                                  errorClave = !claveValida;
-                                  errorClaveVacia = false;
-                                });
-                              });
-                            } else {
-                              setState(() {
-                                errorClave = false;
-                                errorClaveVacia = false;
-                              });
-                            }
-                          });
-                        }
                         return null;
                       },
                       style: const TextStyle(color: Colors.black),
@@ -301,12 +285,14 @@ class _LoginPageState extends State<LoginPage> {
                         suffixIcon: InkWell(
                           onTap: () {
                             setState(() {
-                              obscureText = !obscureText;
+                              obscureText =
+                                  !obscureText; //Actualiza la variable, para mostrar o ocultar clave
                             });
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Icon(
+                                //Cambiar el icono del ojo para mostrar contrasenia segun corresponda
                                 obscureText
                                     ? Icons.visibility
                                     : Icons.visibility_off,
@@ -316,6 +302,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
+                  //Erroes para la clave
                   if (errorClaveVacia || errorClave)
                     Align(
                       alignment: Alignment.centerLeft,
@@ -329,6 +316,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
+                  //Seccion de olvide mi contrasenia
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Container(
@@ -339,7 +327,8 @@ class _LoginPageState extends State<LoginPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => OlvideMiClaveScreen(),
+                              builder: (context) =>
+                                  const OlvideMiClaveScreen(), //Redirige a la interfaz de olvideMiClave al hacer click
                             ),
                           );
                         },
@@ -347,15 +336,16 @@ class _LoginPageState extends State<LoginPage> {
                         child: const Text(
                           'Olvidé mi contraseña',
                           style: TextStyle(
-                            color: Colors.blue,
+                            color: AppColors.white,
                             decoration: TextDecoration.underline,
-                            decorationColor: Colors.blue,
+                            decorationColor: AppColors.white,
                           ),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 50),
+                  //Seccion para ingresar a tu cuenta
                   Align(
                     alignment: Alignment.center,
                     child: Material(
@@ -364,20 +354,48 @@ class _LoginPageState extends State<LoginPage> {
                       child: InkWell(
                         borderRadius: BorderRadius.circular(20.0),
                         onTap: () async {
+                          //Se verifica la validacion del formulario
                           if (_formKey.currentState?.validate() ?? false) {
                             _formKey.currentState?.save();
-                            obtenerReservasUsuarios(rutValue);
-                            if (await autenticarUsuario(rutValue, claveValue)) {
-                              await guardarSesion(rutValue);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const MisReservasScreen(),
+                            try {
+                              //Verifica si hay un usuario con esta credencial en nuestro servicio de autenticacion
+                              UserCredential userCredential =
+                                  await _auth.signInWithEmailAndPassword(
+                                email: correoValue.trim(),
+                                password: claveValue,
+                              );
+
+                              //Si es distinto de null, quiere decir que si existe un usuario con los datos que se le pasaron
+                              if (userCredential.user != null) {
+                                //Se obtiene el rut del usuario a travez de su correo, gracias al documento donde tenemos guardados estos datos.
+                                String rutUsuario =
+                                    await obtenerRutUsuario(correoValue);
+                                //Pasamos el rut del usuario para guardar una sesion en la app.
+                                await guardarSesion(rutUsuario);
+                                //Redirige a la interfaz de mis reservas
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const MisReservasScreen(),
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              // Manejo del error si la autenticación falla
+                              //Se despliega un snackbar
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Error, contraseña incorrecta.',
+                                    style: TextStyle(color: AppColors.white),
+                                  ),
+                                  duration: Duration(seconds: 3),
+                                  backgroundColor: AppColors.error,
                                 ),
                               );
                             }
-                          } else {}
+                          }
                         },
                         splashColor: Colors.blueAccent,
                         child: Container(
@@ -410,6 +428,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             const SizedBox(height: 50),
+            //Seccion para registrarse
             Align(
               alignment: Alignment.center,
               child: InkWell(
@@ -417,7 +436,8 @@ class _LoginPageState extends State<LoginPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const RegistrarseScreen(),
+                      builder: (context) =>
+                          const RegistrarseScreen(), //Redirige a la interfaz de registrarse
                     ),
                   );
                 },
@@ -428,17 +448,17 @@ class _LoginPageState extends State<LoginPage> {
                     Text(
                       '¿No tienes cuenta?',
                       style: TextStyle(
-                        color: Colors.blue,
+                        color: AppColors.white,
                         decoration: TextDecoration.underline,
-                        decorationColor: Colors.blue,
+                        decorationColor: AppColors.white,
                       ),
                     ),
                     Text(
                       'Regístrate aquí',
                       style: TextStyle(
-                        color: Colors.blue,
+                        color: AppColors.white,
                         decoration: TextDecoration.underline,
-                        decorationColor: Colors.blue,
+                        decorationColor: AppColors.white,
                       ),
                     ),
                   ],

@@ -14,33 +14,30 @@ class BusquedaHoraScreen extends StatefulWidget {
 }
 
 class _BusquedaHoraScreenState extends State<BusquedaHoraScreen> {
-  final SessionManager _sessionManager = SessionManager();
+  final SessionManager _sessionManager =
+      SessionManager(); //Para manejar la sesion
 
-  final List<String> items = [
-    'Item1',
-    'Item2',
-    'Item3',
-    'Item4',
-    'Item5',
-    'Item6',
-    'Item7',
-    'Item8',
-  ];
+  //Para almacenar el valor de los selects
   String? selectedValue;
   String? selectedValue2;
-  List<Map<String, dynamic>> datosEspecialidades = [];
-  List<Map<String, dynamic>> datosProfesionales = [];
+  List<Map<String, dynamic>> datosEspecialidades =
+      []; //Se guardan los datos de especialiddades
+  List<Map<String, dynamic>> datosProfesionales =
+      []; //Se guardan los datos de profesionales
 
   @override
   void initState() {
     super.initState();
+    //Se inicializa el temporizador de la sesion
     _sessionManager.startSessionTimer(context);
+    //Se cargan los datos de especialidades y profesionales
     cargarDatosEspecialidades();
     cargarDatosProfesionales();
   }
 
   @override
   void dispose() {
+    //Se detiene el temporizador de la sesion
     _sessionManager.stopSessionTimer();
     super.dispose();
   }
@@ -92,6 +89,7 @@ class _BusquedaHoraScreenState extends State<BusquedaHoraScreen> {
               Container(
                 width: MediaQuery.of(context).size.width,
                 margin: const EdgeInsets.only(left: 20, right: 20, top: 10),
+                //Se crea un dropDownButton
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton2<String>(
                     isExpanded: true,
@@ -110,9 +108,11 @@ class _BusquedaHoraScreenState extends State<BusquedaHoraScreen> {
                         ),
                       ],
                     ),
+                    //Se van creando items por cada especialidad que encuentre en el map
                     items: datosEspecialidades
                         .map((item) => DropdownMenuItem<String>(
-                              value: item['id_especialidad'],
+                              value: item[
+                                  'id_especialidad'], //Le asignamos su id como value para el select
                               child: Text(
                                 item['nombre'],
                                 style: const TextStyle(
@@ -124,8 +124,10 @@ class _BusquedaHoraScreenState extends State<BusquedaHoraScreen> {
                               ),
                             ))
                         .toList(),
-                    value: selectedValue,
+                    value:
+                        selectedValue, //Si la opcion es la seleccionada se guarda el valor
                     onChanged: (String? value) {
+                      //Cuando se cambia la especialidad se borra la seleccion del profesional que tenia antes seleccionada
                       setState(() {
                         selectedValue = value;
                         selectedValue2 = null;
@@ -144,6 +146,7 @@ class _BusquedaHoraScreenState extends State<BusquedaHoraScreen> {
                       ),
                       elevation: 2,
                     ),
+                    //Estilos del dropdown
                     iconStyleData: const IconStyleData(
                       icon: Icon(
                         Icons.arrow_drop_down_rounded,
@@ -187,6 +190,7 @@ class _BusquedaHoraScreenState extends State<BusquedaHoraScreen> {
               Container(
                 width: MediaQuery.of(context).size.width,
                 margin: const EdgeInsets.only(left: 20, right: 20, top: 10),
+                //Segundo dropdown ahora para los profesionales
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton2<String>(
                     isExpanded: true,
@@ -205,6 +209,8 @@ class _BusquedaHoraScreenState extends State<BusquedaHoraScreen> {
                         ),
                       ],
                     ),
+                    //Se van creando items por cada profesional que encuentre en el map
+                    //Si no se ha seleccionado especialidad se muestran todos los profesionales
                     items: (selectedValue == null)
                         ? datosProfesionales.map((item) {
                             return DropdownMenuItem<String>(
@@ -220,14 +226,14 @@ class _BusquedaHoraScreenState extends State<BusquedaHoraScreen> {
                               ),
                             );
                           }).toList()
-                        : datosProfesionales
+                        : datosProfesionales //Se filtra los profesionales por especialidad
                             .where(
                                 (item) => item['especialidad'] == selectedValue)
                             .map((item) {
                             return DropdownMenuItem<String>(
                               value: item['rut'],
                               child: Text(
-                                '${item['nombre']} ${item['apellido_paterno']} ${item['apellido_materno']}',
+                                '${item['nombre']} ${item['apellido_paterno']} ${item['apellido_materno']}', //Se muestran los datos del profesional
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -292,6 +298,7 @@ class _BusquedaHoraScreenState extends State<BusquedaHoraScreen> {
                 child: Column(
                   children: [
                     ElevatedButton(
+                      //Se manejan los distintos casos de busqueda y se redrige a la interfaz de resultadosBusqueda
                       onPressed: () {
                         if (selectedValue2 != null) {
                           Navigator.push(
@@ -352,6 +359,7 @@ class _BusquedaHoraScreenState extends State<BusquedaHoraScreen> {
     );
   }
 
+  //Carga datos de especialidades
   void cargarDatosEspecialidades() {
     obtenerEspecialidades().then((List<Map<String, dynamic>> result) {
       setState(() {
@@ -360,6 +368,7 @@ class _BusquedaHoraScreenState extends State<BusquedaHoraScreen> {
     });
   }
 
+  //Carga de datos de profesionales
   void cargarDatosProfesionales() {
     obtenerProfesionales().then((List<Map<String, dynamic>> result) {
       setState(() {

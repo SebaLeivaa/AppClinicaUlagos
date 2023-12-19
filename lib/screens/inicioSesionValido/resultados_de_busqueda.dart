@@ -9,6 +9,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ResultadosBusquedaScreen extends StatefulWidget {
+  //Se inicializa el constructor con sus parametros
   const ResultadosBusquedaScreen({
     Key? key,
     required this.rutProfesional,
@@ -25,18 +26,24 @@ class ResultadosBusquedaScreen extends StatefulWidget {
 }
 
 class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
-  final SessionManager _sessionManager = SessionManager();
-  final CarouselController _carouselController = CarouselController();
+  final SessionManager _sessionManager =
+      SessionManager(); //Para manejar la sesion
+  final CarouselController _carouselController =
+      CarouselController(); //Controller para el carrousel
   int currentPage = 0;
-  List<String> datosDiasCitasMedicas = [];
-  List<Map<String, dynamic>> datosCitasMedicasDiaSeleccionado = [];
+  List<String> datosDiasCitasMedicas =
+      []; //Se almacenas los datos de dias que hay disponibles citasMedicas
+  List<Map<String, dynamic>> datosCitasMedicasDiaSeleccionado =
+      []; //Se almacenan los datos para las citas medicas del dia seleccionado
   String? rutUsuario;
   String? correoUsuario;
 
   @override
   void initState() {
     super.initState();
+    //Se inicializa el temporizador de la sesion
     _sessionManager.startSessionTimer(context);
+    //Carga de datos
     cargarDatosDiasCitasMedicas();
     cargarDatosCitasMedicasMasProxima();
     cargarDatosUsuario();
@@ -44,6 +51,7 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
 
   @override
   void dispose() {
+    //Se detiene el temporizador de la sesion
     _sessionManager.stopSessionTimer();
     super.dispose();
   }
@@ -77,6 +85,7 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
                   width: double.infinity,
                   margin: const EdgeInsets.only(left: 5, top: 30),
                   child: Center(
+                    //Boton para retroceder la pagina del carousel
                     child: InkWell(
                       onTap: () {
                         _carouselController.previousPage();
@@ -96,13 +105,16 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
                   width: MediaQuery.of(context).size.width - 40,
                   color: AppColors.blue_500,
                   child: CarouselSlider(
-                    carouselController: _carouselController,
+                    carouselController:
+                        _carouselController, //controller carousel
+                    //Se genera una litsta con diez elementos
                     items: List.generate(10, (groupIndex) {
-                      // Dividir la lista en grupos de 7 elementos cada uno
+                      // Dividir la lista en grupos de 7 elementos cada uno para los dias de la semana
                       List<DateTime> group = List.generate(7, (index) {
                         return DateTime.now()
                             .add(Duration(days: groupIndex * 7 + index));
                       });
+                      //Se obtiene el mes, anio, del primer y ultimo dia de la semana
                       String monthFirstDayWeek = getMonthName(group[0].month);
                       int yearFirstDayWeek = group[0].year;
                       String monthLastDayWeek = getMonthName(group[6].month);
@@ -113,6 +125,7 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
                         child: Column(
                           children: [
                             Center(
+                              //Se manejan los distintos casos para mostrar el mes y el anio en el que se encuentra respectivamente
                               child: (monthFirstDayWeek == monthLastDayWeek)
                                   ? Text('$monthFirstDayWeek $yearFirstDayWeek',
                                       style: const TextStyle(
@@ -125,6 +138,7 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              //Se genera otra lista para los dias (numeros)
                               children: List.generate(7, (index) {
                                 DateTime currentDate = group[index];
 
@@ -146,6 +160,8 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
                                           color: AppColors.white,
                                         ),
                                       ),
+                                      //Se verifica si la fecha actual se encuentra en la lista de datos en los cuales hay citas disponibles
+                                      //Y si es el caso se crea un inkWell(boton)
                                       (datosDiasCitasMedicas.contains(
                                               '${currentDate.day.toString().padLeft(2, '0')}/${currentDate.month.toString().padLeft(2, '0')}/${currentDate.year.toString().padLeft(2, '0')}'))
                                           ? InkWell(
@@ -153,7 +169,7 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
                                                 try {
                                                   List<Map<String, dynamic>>
                                                       result;
-
+                                                  //Al hacer click segun el filtro que tenga se obtienen los datos de citas medicas para el dia seleccionado
                                                   if (widget.rutProfesional !=
                                                       null) {
                                                     result =
@@ -168,12 +184,13 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
                                                       currentDate,
                                                     );
                                                   }
-
+                                                  //SE actualizan los datos
                                                   setState(() {
                                                     datosCitasMedicasDiaSeleccionado =
                                                         result;
                                                   });
                                                 } catch (e) {
+                                                  // ignore: avoid_print
                                                   print(
                                                       "Error al obtener datos de citas médicas: $e");
                                                 }
@@ -184,6 +201,8 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
                                                 padding:
                                                     const EdgeInsets.all(13),
                                                 decoration: BoxDecoration(
+                                                  //Se llama la funcion de color, para cambiar el color de fondo segun corresponda si hay cita disponible
+                                                  //o si es la mas proxima
                                                   color:
                                                       getCellColor(currentDate),
                                                   borderRadius:
@@ -199,6 +218,7 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
                                                 ),
                                               ),
                                             )
+                                          //Si no hay citas para ese dia devuelve solamente el container
                                           : Container(
                                               margin: const EdgeInsets.only(
                                                   left: 0, right: 0),
@@ -226,6 +246,7 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
                         ),
                       );
                     }),
+                    //Opciones carousel
                     options: CarouselOptions(
                       height: 200,
                       initialPage: 0,
@@ -250,7 +271,8 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
                   child: Center(
                       child: InkWell(
                     onTap: () {
-                      _carouselController.nextPage();
+                      _carouselController
+                          .nextPage(); //Cambia a la pagina siguiente del carousel
                     },
                     child: const Icon(
                       Icons.arrow_forward_ios,
@@ -293,25 +315,46 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
             child: Container(
               margin: const EdgeInsets.only(top: 20),
               height: 400,
-              child: ListView.builder(
-                itemCount: datosCitasMedicasDiaSeleccionado.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final citaMedica = datosCitasMedicasDiaSeleccionado[index];
-                  return MiWidget(
-                    rutPaciente: rutUsuario!,
-                    correoPaciente: correoUsuario!,
-                    nombreProfesional: citaMedica['nombre_profesional'],
-                    apellidoPatProfesional:
-                        citaMedica['apellido_paterno_profesional'],
-                    apellidoMatProfesional:
-                        citaMedica['apellido_materno_profesional'],
-                    fechaCita: citaMedica['fecha'],
-                    especialidad: citaMedica['nombre_especialidad'],
-                    horasCita: citaMedica['horas'],
-                    idCita: citaMedica['idCita'],
-                  );
-                },
-              ),
+              //Si no para el dia seleccionado hay citas se crea un listView de tipo constructor
+              //Que va ir generando las reservas para cada profesional y su hora correspondiente
+              //Se agrupan las reservas por profesional en un card
+              child: datosCitasMedicasDiaSeleccionado.isNotEmpty
+                  ? ListView.builder(
+                      itemCount: datosCitasMedicasDiaSeleccionado.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final citaMedica =
+                            datosCitasMedicasDiaSeleccionado[index];
+                        return MiWidget(
+                          //Se le pasan todos estos datos a la clase MiWidget
+                          rutPaciente: rutUsuario!,
+                          correoPaciente: correoUsuario!,
+                          nombreProfesional: citaMedica['nombre_profesional'],
+                          apellidoPatProfesional:
+                              citaMedica['apellido_paterno_profesional'],
+                          apellidoMatProfesional:
+                              citaMedica['apellido_materno_profesional'],
+                          fechaCita: citaMedica['fecha'],
+                          especialidad: citaMedica['nombre_especialidad'],
+                          horasCita: citaMedica['horas'],
+                          idCita: citaMedica['idCita'],
+                        );
+                      },
+                    )
+                  : Container(
+                      //Si no hay citas muestrar el siguiente mensaje
+                      margin: const EdgeInsets.only(top: 200),
+                      height: double.infinity,
+                      child: const Center(
+                        child: Column(
+                          children: [
+                            Icon(Icons.calendar_month_rounded,
+                                color: AppColors.blue_500, size: 30),
+                            Text('No hay citas medicas disponibles',
+                                style: TextStyle(
+                                    color: AppColors.blue_500, fontSize: 24)),
+                          ],
+                        ),
+                      )),
             ),
           ),
         ],
@@ -319,6 +362,7 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
     );
   }
 
+  // funcion que obtine los dias de la semana
   String getDayOfWeek(int day) {
     switch (day) {
       case 1:
@@ -339,6 +383,8 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
         return '';
     }
   }
+
+  //Funcion que obtiene el nombre del mes
 
   String getMonthName(int month) {
     switch (month) {
@@ -371,6 +417,7 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
     }
   }
 
+  //Carga de datos
   void cargarDatosDiasCitasMedicas() {
     if (widget.rutProfesional != null) {
       obtenerDiasCitasMedicasPorRut(widget.rutProfesional)
@@ -389,6 +436,7 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
     }
   }
 
+  //Carga los datos para la cita mas proxima, esta va si o si al comienzo al buscar citas medicas
   void cargarDatosCitasMedicasMasProxima() {
     if (widget.rutProfesional != null) {
       obtenerCitasMedicasMasProximaPorRut(widget.rutProfesional)
@@ -407,6 +455,7 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
     }
   }
 
+  //Cambia el color de fondo del calendario segun corresponda para cada caso
   Color getCellColor(DateTime currentDate) {
     for (int i = 0; i < datosDiasCitasMedicas.length; i++) {
       var cita = datosDiasCitasMedicas[i];
@@ -423,6 +472,7 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
     return AppColors.blue_500;
   }
 
+  //CARGA DATOS USUARIO
   Future<void> cargarDatosUsuario() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -433,6 +483,7 @@ class _ResultadosBusquedaScreenState extends State<ResultadosBusquedaScreen> {
   }
 }
 
+//AcA SE GENERAN LAS CITAS MEDICAS AGRUPADAS POR PROFESIONAL
 class MiWidget extends StatelessWidget {
   final String rutPaciente;
   final String correoPaciente;
@@ -459,13 +510,13 @@ class MiWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //sE OBITENEN ESTOS DATOS PARA MOSTRAR LOS DATOS DE LA CITA EN EL FORMATO QUE QUEREMOS
     DateTime fecha = fechaCita.toDate();
     int numeroDia = fecha.day;
     int anio = fecha.year;
     int numeroDiaDeLaSemana = fecha.weekday;
     int numeroMes = fecha.month;
     int index = 0;
-
     final nombreDia = [
       "Lunes",
       "Martes",
@@ -527,6 +578,7 @@ class MiWidget extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
+                          //Muestra las fechas de las citas
                           '${nombreDia[numeroDiaDeLaSemana - 1]} ${numeroDia.toString().padLeft(2, '0')} de ${nombreMes[numeroMes - 1]} del ${anio.toString()}',
                           style: const TextStyle(
                             color: AppColors.white,
@@ -545,6 +597,7 @@ class MiWidget extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          //Nombre del profesional
                           Text(
                             '$nombreProfesional $apellidoPatProfesional ${apellidoMatProfesional.substring(0, 1)}.',
                             style: const TextStyle(
@@ -571,6 +624,7 @@ class MiWidget extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.start,
+                        //Generamos todos los botones paras las horas que hay disponible
                         children: horasCita.map((
                           hora,
                         ) {
@@ -582,6 +636,7 @@ class MiWidget extends StatelessWidget {
                             width: 80,
                             child: ElevatedButton(
                               onPressed: () {
+                                //Se muestra un bottomSheet al hacer click en la hora.
                                 showModalBottomSheet(
                                   context: context,
                                   builder: (BuildContext context) {
@@ -607,6 +662,7 @@ class MiWidget extends StatelessWidget {
                                                 margin: const EdgeInsets.only(
                                                     top: 10),
                                                 child: Row(
+                                                  //Se muestran los datos de la cita medica seleccionada
                                                   children: [
                                                     const SizedBox(width: 20),
                                                     Image.asset(
@@ -623,6 +679,7 @@ class MiWidget extends StatelessWidget {
                                                           CrossAxisAlignment
                                                               .start,
                                                       children: [
+                                                        //Nombre profesional
                                                         Text(
                                                           '$nombreProfesional $apellidoPatProfesional ${apellidoMatProfesional.substring(0, 1)}.',
                                                           style:
@@ -660,6 +717,7 @@ class MiWidget extends StatelessWidget {
                                                     ),
                                                     const SizedBox(width: 8),
                                                     Text(
+                                                      //Fecha
                                                       '${nombreDia[numeroDiaDeLaSemana - 1]} ${numeroDia.toString()} de ${nombreMes[numeroMes - 1]} del ${anio.toString()}',
                                                       style: const TextStyle(
                                                         color: AppColors.black,
@@ -684,6 +742,7 @@ class MiWidget extends StatelessWidget {
                                                                     BorderRadius
                                                                         .circular(
                                                                             8)),
+                                                        //Hora de la cita
                                                         child: Text(
                                                           hora,
                                                           style: const TextStyle(
@@ -704,6 +763,7 @@ class MiWidget extends StatelessWidget {
                                                       size: 30,
                                                     ),
                                                     SizedBox(width: 8),
+                                                    //Mensajes de alerta
                                                     Expanded(
                                                       child: Text(
                                                         'RECUERDA que puedes anular tu hora con una antelación mínima de 48 horas',
@@ -729,6 +789,7 @@ class MiWidget extends StatelessWidget {
                                                   children: [
                                                     ElevatedButton(
                                                       onPressed: () async {
+                                                        //AL HACER CLICK EN RESERVAR SE GUARDA LA CITA MEDICA, Y SE REGISTRA EN LA BASE DE DATOS
                                                         bool exito =
                                                             await guardarCitaMedica(
                                                                 idCitaActual,
@@ -738,6 +799,7 @@ class MiWidget extends StatelessWidget {
                                                           // ignore: use_build_context_synchronously
                                                           Navigator.push(
                                                             context,
+                                                            //Si se registro correctamente redirige a la interfaz de ReservaExitosa y se pasan los siguientes datos
                                                             MaterialPageRoute(
                                                               builder: (context) => ReservaExitosaScreen(
                                                                   correoPaciente:
@@ -793,6 +855,7 @@ class MiWidget extends StatelessWidget {
                                                       ),
                                                     ),
                                                     ElevatedButton(
+                                                      //Al hacer click en el buton se cierra el bottomsheet
                                                       onPressed: () {
                                                         Navigator.pop(context);
                                                       },

@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import 'package:clinica_ulagos_app/main.dart';
 
-class RegistrarseExitosoScreen extends StatefulWidget {
-  const RegistrarseExitosoScreen({Key? key}) : super(key: key);
+class EnvioCorreoExitosoScreen extends StatefulWidget {
+  const EnvioCorreoExitosoScreen({Key? key}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
-  _RegistrarseExitosoScreenState createState() =>
-      _RegistrarseExitosoScreenState();
+  _EnvioCorreoExitosoScreenState createState() =>
+      _EnvioCorreoExitosoScreenState();
 }
 
-class _RegistrarseExitosoScreenState extends State<RegistrarseExitosoScreen> {
+class _EnvioCorreoExitosoScreenState extends State<EnvioCorreoExitosoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,7 +35,8 @@ class _RegistrarseExitosoScreenState extends State<RegistrarseExitosoScreen> {
             ),
           ),
           const Text(
-            '¡Te has registrado éxitosamente!',
+            '¡Correo de restablecimiento enviado con éxito!',
+            textAlign: TextAlign.center,
             style: TextStyle(fontSize: 24),
           ),
           const SizedBox(height: 70),
@@ -45,7 +46,7 @@ class _RegistrarseExitosoScreenState extends State<RegistrarseExitosoScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      const LoginPage(), //Redirige a la interfaz principal
+                      const LoginPage(), //Redirige a la interfaz principal (Login)
                 ),
               );
             },

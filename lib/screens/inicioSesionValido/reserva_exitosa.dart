@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 class ReservaExitosaScreen extends StatefulWidget {
   const ReservaExitosaScreen(
+      //Se inicializa el constructor
       {Key? key,
       required this.correoPaciente,
       required this.nombreCompletoProfesional,
@@ -36,8 +37,8 @@ class _ReservaExitosaScreenState extends State<ReservaExitosaScreen> {
       ),
       body: Column(
         children: [
-          SizedBox(height: 20),
-          Text(
+          const SizedBox(height: 20),
+          const Text(
             '¡Se ha registrado con éxito su reserva!',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 24),
@@ -59,6 +60,7 @@ class _ReservaExitosaScreenState extends State<ReservaExitosaScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    //Datos de la cita medica
                     Text(
                       widget.nombreCompletoProfesional,
                       style: const TextStyle(
@@ -133,24 +135,25 @@ class _ReservaExitosaScreenState extends State<ReservaExitosaScreen> {
             ),
           ),
           Container(
-            margin: EdgeInsets.only(top: 40, left: 20, right: 20),
+            margin: const EdgeInsets.only(top: 40, left: 20, right: 20),
             child: Center(
               child: Column(
                 children: [
                   Text(
                       'Le hemos enviado un correo electrónico a ${widget.correoPaciente} con la confirmación y respectivo detalle de la reserva.',
                       textAlign: TextAlign.justify,
-                      style: TextStyle(color: AppColors.black, fontSize: 15)),
-                  SizedBox(
+                      style: const TextStyle(
+                          color: AppColors.black, fontSize: 15)),
+                  const SizedBox(
                     height: 8,
                   ),
-                  Icon(Icons.email, color: AppColors.blue_500, size: 75)
+                  const Icon(Icons.email, color: AppColors.blue_500, size: 75)
                 ],
               ),
             ),
           ),
           Container(
-            margin: EdgeInsets.only(top: 60),
+            margin: const EdgeInsets.only(top: 60),
             alignment: Alignment.center,
             child: ElevatedButton(
               onPressed: () {

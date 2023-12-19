@@ -6,11 +6,12 @@ import 'dart:async';
 import 'package:clinica_ulagos_app/main.dart';
 import 'package:clinica_ulagos_app/consultasFirebase/consultas.dart';
 
+//Se va verificando la sesion cada cierto tiempo
 class SessionManager {
   late Timer _timer;
 
   void startSessionTimer(BuildContext context) {
-    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+    _timer = Timer.periodic(const Duration(minutes: 5), (timer) {
       _verificarSesionAutomaticamente(context);
     });
   }
@@ -19,6 +20,7 @@ class SessionManager {
     _timer.cancel();
   }
 
+  //Funcion que verifica la sesion automaticammente
   Future<void> _verificarSesionAutomaticamente(BuildContext context) async {
     if (!(await verificarSesion())) {
       // La sesión ha expirado, redirige a la pantalla de inicio de sesión
@@ -32,6 +34,7 @@ class SessionManager {
   }
 }
 
+//Funcion que guarda la sesion, y guarda datos del usuario
 Future<void> guardarSesion(String rutUsuario) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   prefs.setBool('sesion', true);
@@ -49,6 +52,7 @@ Future<void> guardarSesion(String rutUsuario) async {
   }
 }
 
+//Funcion para verificar si hay una sesion
 Future<bool> verificarSesion() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool sesionActiva = prefs.getBool('sesion') ?? false;
@@ -68,7 +72,14 @@ Future<bool> verificarSesion() async {
   return false;
 }
 
-Future<void> cerrarSesion() async {
+//Funcion para cerrar sesion
+Future<void> cerrarSesion(BuildContext context) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.clear(); // Limpiar todas las preferencias al cerrar la sesión
+  await prefs.clear();
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const LoginPage(),
+    ),
+  );
 }

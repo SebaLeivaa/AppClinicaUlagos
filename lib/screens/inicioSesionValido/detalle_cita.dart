@@ -29,11 +29,13 @@ class _DetalleCitaScreenState extends State<DetalleCitaScreen> {
   @override
   void initState() {
     super.initState();
+    //Se inicializa el temporizador de la sesion
     _sessionManager.startSessionTimer(context);
   }
 
   @override
   void dispose() {
+    //Se detiene el temporizador de la sesion
     _sessionManager.stopSessionTimer();
     super.dispose();
   }
@@ -100,6 +102,7 @@ class _DetalleCitaScreenState extends State<DetalleCitaScreen> {
                     ),
                     const SizedBox(height: 20),
                     Row(
+                      //Imagen del profesional en este caso default
                       children: [
                         const SizedBox(width: 10),
                         Image.asset('lib/img/default.png', height: 100),
@@ -109,6 +112,7 @@ class _DetalleCitaScreenState extends State<DetalleCitaScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            //Nombre del profesional
                             Text(
                               widget.fullNameProfesional,
                               style: const TextStyle(
@@ -119,6 +123,7 @@ class _DetalleCitaScreenState extends State<DetalleCitaScreen> {
                             const SizedBox(
                               height: 4,
                             ),
+                            //Especialidad del profesional
                             Text(
                               widget.especialidad,
                               style: const TextStyle(
@@ -138,6 +143,7 @@ class _DetalleCitaScreenState extends State<DetalleCitaScreen> {
                                 decoration: BoxDecoration(
                                     color: AppColors.blue_500,
                                     borderRadius: BorderRadius.circular(8)),
+                                //Hora de la cita
                                 child: Text(
                                   widget.fullHourCita,
                                   style:
@@ -174,6 +180,7 @@ class _DetalleCitaScreenState extends State<DetalleCitaScreen> {
                       ),
                     ),
                     child: const Center(
+                      //DETALLE DE LA CITA
                       child: Text(
                         'Detalle',
                         style: TextStyle(color: AppColors.white, fontSize: 20),

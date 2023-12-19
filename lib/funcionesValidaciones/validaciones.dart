@@ -1,8 +1,10 @@
+//Funcion para validar el formato del telefono
 bool validarTelefono(String telefono) {
   RegExp regex = RegExp(r'^9\d{8}$');
   return regex.hasMatch(telefono);
 }
 
+//Funcion para validar el formato del correo
 bool validarCorreo(String correo) {
   RegExp regex = RegExp(
     r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
@@ -10,6 +12,7 @@ bool validarCorreo(String correo) {
   return regex.hasMatch(correo);
 }
 
+//Funcion para validar el rut
 bool validarRut(String input) {
   RegExp regex = RegExp(r'^\d{7,8}-[\dkK]$');
 

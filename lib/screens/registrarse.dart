@@ -3,7 +3,7 @@
 import 'package:clinica_ulagos_app/screens/crear_clave.dart';
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart'; //Para manejar el tipo de formato para las fechas
 import 'package:clinica_ulagos_app/funcionesValidaciones/validaciones.dart';
 import 'package:clinica_ulagos_app/consultasFirebase/consultas.dart';
 
@@ -14,9 +14,8 @@ class RegistrarseScreen extends StatefulWidget {
   _RegistrarseScreenState createState() => _RegistrarseScreenState();
 }
 
-// ... Importaciones y código anterior
-
 class _RegistrarseScreenState extends State<RegistrarseScreen> {
+  //Controladores para manejar las entradas en los textFormField
   final TextEditingController _rutController = TextEditingController();
   final TextEditingController _nombresController = TextEditingController();
   final TextEditingController _apePatController = TextEditingController();
@@ -26,6 +25,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
   final TextEditingController _telefonoController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  //Creamos variables para cada input
   String rutValue = '';
   String nombresValue = '';
   String apellidoPatValue = '';
@@ -34,9 +34,11 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
   String generoValue = '';
   String correoValue = '';
   String telefonoValue = '';
+  //Para manejar la eleccion de algunos de estos botones mas adelante
   Color femeninoColor = AppColors.inputs;
   Color masculinoColor = AppColors.inputs;
   Color otroColor = AppColors.inputs;
+  //Inicializamos los diferentes tipos de errores
   bool errorRutVacio = false;
   bool errorRutExiste = false;
   bool errorRutInvalido = false;
@@ -100,12 +102,15 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 onSaved: (value) {
                   rutValue = value ?? '';
                 },
+                //Se manejan en tiempo real los errores para mostrarle al usuario
                 onChanged: (value) {
                   setState(() {
+                    //Si la entrada es vacio
                     if (value.isEmpty) {
                       setState(() {
                         errorRutVacio = true;
                       });
+                      //Se valida el rut, se verifica que sea un rut real
                     } else if (!validarRut(value)) {
                       setState(() {
                         errorRutVacio = false;
@@ -113,6 +118,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                         errorRutInvalido = true;
                       });
                     } else {
+                      //Se verifica si el rut ya existe en nuestra base de datos
                       checkIfRutExists(value).then((rutExists) {
                         setState(() {
                           errorRutExiste = rutExists;
@@ -124,6 +130,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                   });
                 },
                 validator: (value) {
+                  //Se valida el formulario
                   if (value == null || value.isEmpty) {
                     setState(() {
                       errorRutVacio = true;
@@ -166,6 +173,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 ),
               ),
             ),
+            //Diferentes tipos de errores y sus respectivos mensajes para cada caso
             if (errorRutVacio || errorRutExiste || errorRutInvalido)
               Padding(
                 padding: const EdgeInsets.only(top: 7.0, left: 30.0),
@@ -205,6 +213,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 onSaved: (value) {
                   nombresValue = value ?? '';
                 },
+                //Se manejan los errores en tiempo real
                 onChanged: (value) {
                   if (value.isEmpty) {
                     setState(() {
@@ -216,6 +225,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     });
                   }
                 },
+                //Se valida el formulario
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     setState(() {
@@ -250,6 +260,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 ),
               ),
             ),
+            //Unico tipo de error
             if (errorNombreVacio)
               const Padding(
                 padding: EdgeInsets.only(top: 7.0, left: 30.0),
@@ -283,6 +294,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 onSaved: (value) {
                   apellidoPatValue = value ?? '';
                 },
+                //Se manejan los errores en tiempo real
                 onChanged: (value) {
                   if (value.isEmpty) {
                     setState(() {
@@ -294,6 +306,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     });
                   }
                 },
+                //Se valida el formulario
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     setState(() {
@@ -328,6 +341,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 ),
               ),
             ),
+            //Unico tipo de error
             if (errorApePatVacio)
               const Padding(
                 padding: EdgeInsets.only(top: 7.0, left: 30.0),
@@ -361,6 +375,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 onSaved: (value) {
                   apellidoMatValue = value ?? '';
                 },
+                //Se manejan los errores en tiempo real
                 onChanged: (value) {
                   if (value.isEmpty) {
                     setState(() {
@@ -372,6 +387,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     });
                   }
                 },
+                //Se valida el formulario
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     setState(() {
@@ -406,6 +422,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 ),
               ),
             ),
+            //Unico tipo de error
             if (errorApeMatVacio)
               const Padding(
                 padding: EdgeInsets.only(top: 7.0, left: 30.0),
@@ -462,9 +479,11 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 onSaved: (value) {
                   dateValue = value ?? '';
                 },
+                //Al hacer click llama la funcion para seleccionar fecha
                 onTap: () {
                   _seleccionarFecha();
                 },
+                //Se manejan los errores en tiempo real
                 onChanged: (value) {
                   if (value.isEmpty) {
                     setState(() {
@@ -476,6 +495,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     });
                   }
                 },
+                //Se valida el formulario
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     setState(() {
@@ -491,6 +511,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 },
               ),
             ),
+            //Unico tipo de error
             if (errorFecVacio)
               const Padding(
                 padding: EdgeInsets.only(top: 7.0, left: 30.0),
@@ -522,7 +543,9 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
+                    //Se crean los tres botones para cada caso
                     ElevatedButton(
+                      //A; hacer click en el boton se cambia el color y reestablece el color para los otros botones
                       onPressed: () {
                         setState(() {
                           generoValue = 'F';
@@ -550,6 +573,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     const SizedBox(width: 10),
                     ElevatedButton(
                       onPressed: () {
+                        //A; hacer click en el boton se cambia el color y reestablece el color para los otros botones
                         setState(() {
                           generoValue = 'M';
                           femeninoColor = AppColors.inputs;
@@ -577,6 +601,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     ElevatedButton(
                       onPressed: () {
                         setState(() {
+                          //A; hacer click en el boton se cambia el color y reestablece el color para los otros botones
                           generoValue = 'O';
                           femeninoColor = AppColors.inputs;
                           masculinoColor = AppColors.inputs;
@@ -630,11 +655,13 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 onSaved: (value) {
                   correoValue = value ?? '';
                 },
+                //Se maneja en tiempo real los errores
                 onChanged: (value) {
                   if (value.isEmpty) {
                     setState(() {
                       errorCorreoVacio = true;
                     });
+                    //Se valida el formato del correo
                   } else if (!validarCorreo(value)) {
                     setState(() {
                       errorCorreoVacio = false;
@@ -642,6 +669,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                       errorCorreoInvalido = true;
                     });
                   } else {
+                    //Se verifica si el correo existe en la base de datos
                     checkIfCorreoExists(value).then((correoExists) {
                       setState(() {
                         errorCorreoExiste = correoExists;
@@ -651,6 +679,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     });
                   }
                 },
+                //Se valida el formulario
                 validator: (value) {
                   // Validar si el campo está vacío
                   if (value == null || value.isEmpty) {
@@ -695,6 +724,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 ),
               ),
             ),
+            //Diferentes tipos de errores y sus respectivos mensajes
             if (errorCorreoVacio || errorCorreoExiste || errorCorreoInvalido)
               Padding(
                 padding: const EdgeInsets.only(top: 7.0, left: 30.0),
@@ -734,11 +764,13 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 onSaved: (value) {
                   telefonoValue = value ?? '';
                 },
+                //Se maneja en tiempo real los errores
                 onChanged: (value) {
                   if (value.isEmpty) {
                     setState(() {
                       errorTelefonoVacio = true;
                     });
+                    //Se verifica el formato del telefono
                   } else if (!validarTelefono(value)) {
                     setState(() {
                       errorTelefonoVacio = false;
@@ -746,6 +778,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                       errorTelefonoInvalido = true;
                     });
                   } else {
+                    //Se verifica si el telefono existe en la base de datos
                     checkIfTelefonoExists(value).then((telefonoExists) {
                       setState(() {
                         errorTelefonoExiste = telefonoExists;
@@ -755,6 +788,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                     });
                   }
                 },
+                //Se valida el formulario
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     setState(() {
@@ -798,6 +832,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                 ),
               ),
             ),
+            //Diferentes tipos de errores y sus respectivos mensajes
             if (errorTelefonoVacio ||
                 errorTelefonoExiste ||
                 errorTelefonoInvalido)
@@ -814,11 +849,15 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
               ),
             const SizedBox(height: 25),
             Column(
+              //Boton para pasar a la siguiente interfaz de registrarse
               children: [
                 ElevatedButton(
                   onPressed: () async {
+                    //Se verifica si el formulario esta validado
                     if (_formKey.currentState?.validate() ?? false) {
+                      //Se guardan los datos
                       _formKey.currentState?.save();
+                      //Se verifica que no haya ningun error
                       if (!errorRutVacio &&
                           !errorRutExiste &&
                           !errorRutInvalido &&
@@ -832,6 +871,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
                           !errorTelefonoVacio &&
                           !errorTelefonoExiste &&
                           !errorTelefonoInvalido) {
+                        //Redirige a la otra interfaz y se pasan los valores de cada input de este formulario a la siguiente interfaz
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -894,6 +934,7 @@ class _RegistrarseScreenState extends State<RegistrarseScreen> {
     );
   }
 
+//Se utiliza el widget showDatePicker para seleccionar la fecha
   Future<void> _seleccionarFecha() async {
     DateTime? picked = await showDatePicker(
       context: context,

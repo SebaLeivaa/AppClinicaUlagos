@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+//Funcion que almacena el nuevo registro de un usuario
 Future<bool> enviarDatosAFirebase(
   String rut,
   String nombres,
@@ -9,11 +10,10 @@ Future<bool> enviarDatosAFirebase(
   String genero,
   String correo,
   String telefono,
-  String clave,
 ) async {
   try {
-    CollectionReference paciente =
-        FirebaseFirestore.instance.collection('paciente');
+    CollectionReference paciente = FirebaseFirestore.instance
+        .collection('paciente'); //Referencia a la coleccion
 
     String idPaciente = rut;
 
@@ -32,7 +32,6 @@ Future<bool> enviarDatosAFirebase(
         'genero': genero,
         'correo': correo,
         'telefono': telefono,
-        'clave': clave,
       });
       return true;
     } else {
@@ -50,13 +49,16 @@ Future<bool> enviarDatosAFirebase(
   }
 }
 
+//Funcion para guardar la cita medica del usuario
 Future<bool> guardarCitaMedica(String idCita, String rutPaciente) async {
   try {
-    CollectionReference citasMedicas =
-        FirebaseFirestore.instance.collection('cita_medica');
+    CollectionReference citasMedicas = FirebaseFirestore.instance
+        .collection('cita_medica'); //Referencia a la coleccion
 
-    DocumentReference citaMedica = citasMedicas.doc(idCita);
+    DocumentReference citaMedica = citasMedicas
+        .doc(idCita); //Se obtiene la referencia del documento a cambiar
 
+    //Se actualiza la cita medica, marcandola como no disponible e insertando el rut del paciente
     await citaMedica.update({
       'rut_paciente': rutPaciente,
       'disponible': false,
@@ -70,14 +72,18 @@ Future<bool> guardarCitaMedica(String idCita, String rutPaciente) async {
   }
 }
 
+//Funcion para anular hora
+
 Future<void> anularHora(String documentId) async {
   try {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    FirebaseFirestore firestore =
+        FirebaseFirestore.instance; //Se crea una instancia de firebase
 
     // Referencia al documento que deseas eliminar
     DocumentReference citaMedica =
         firestore.collection('cita_medica').doc(documentId);
 
+    //Se actualiza la cita medica se elimina el rut del paciente y se vuelve a marcar como disponible la cita
     await citaMedica.update({
       'rut_paciente': '',
       'disponible': true,

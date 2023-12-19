@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
+//Funcion que verifica en la base de datos si existe el rut
 Future<bool> checkIfRutExists(String rut) async {
   try {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -19,6 +20,8 @@ Future<bool> checkIfRutExists(String rut) async {
     return false;
   }
 }
+
+//Funcion que verifica en la base de datos si existe el correo
 
 Future<bool> checkIfCorreoExists(String correo) async {
   try {
@@ -37,6 +40,38 @@ Future<bool> checkIfCorreoExists(String correo) async {
   }
 }
 
+//Funcion que obtiene el rut del usuario mediante el correo
+
+Future<String> obtenerRutUsuario(String correo) async {
+  try {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    QuerySnapshot<Map<String, dynamic>> querySnapshot = await firestore
+        .collection('paciente')
+        .where('correo', isEqualTo: correo)
+        .get();
+
+    // Verificar si hay datos en la consulta
+    if (querySnapshot.size > 0) {
+      // Obtener el primer documento (asumiendo que solo hay uno)
+      var pacienteData = querySnapshot.docs[0].data();
+
+      // Obtener el valor del campo 'rut_paciente'
+      String rutPaciente = pacienteData['rut'];
+
+      return rutPaciente;
+    } else {
+      // No se encontraron datos para el correo proporcionado
+      return '';
+    }
+  } catch (error) {
+    // ignore: avoid_print
+    print('Error al verificar el Rut: $error');
+    return '';
+  }
+}
+
+//Funcion para verificar si el telefono ya esta registrado en la base de datos
 Future<bool> checkIfTelefonoExists(String telefono) async {
   try {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -54,6 +89,7 @@ Future<bool> checkIfTelefonoExists(String telefono) async {
   }
 }
 
+//Funcion para obtener los datos del usuario mediante el rut
 Future<Map<String, dynamic>?> obtenerDatosUsuario(String rut) async {
   try {
     QuerySnapshot<Map<String, dynamic>> query = await FirebaseFirestore.instance
@@ -75,6 +111,7 @@ Future<Map<String, dynamic>?> obtenerDatosUsuario(String rut) async {
   return null;
 }
 
+//Funcion que obtiene la reservas del usuario mediante el rut, se obtienen todos los datos que necesitamos mostrar en pantalla en las interfaces
 Future<List<Map<String, dynamic>>> obtenerReservasUsuarios(String rut) async {
   try {
     DateTime fechaActual = DateTime.now();
@@ -145,6 +182,7 @@ Future<List<Map<String, dynamic>>> obtenerReservasUsuarios(String rut) async {
   return []; // O puedes devolver null o cualquier otra cosa según tu lógica.
 }
 
+//Funcion para obtener el historial del usuaario mediante el rut, se obtienen todos los datos que necesitamos mostrar en pantalla en las interfaces
 Future<List<Map<String, dynamic>>> obtenerHistorialUsuarios(String rut) async {
   try {
     DateTime fechaActual = DateTime.now();
@@ -211,6 +249,7 @@ Future<List<Map<String, dynamic>>> obtenerHistorialUsuarios(String rut) async {
   return []; // O puedes devolver null o cualquier otra cosa según tu lógica.
 }
 
+//SE OBTIENEN LOS DATOS DE TODAS LAS ESPECIALIDADES
 Future<List<Map<String, dynamic>>> obtenerEspecialidades() async {
   try {
     QuerySnapshot<Map<String, dynamic>> query =
@@ -232,6 +271,7 @@ Future<List<Map<String, dynamic>>> obtenerEspecialidades() async {
   return [];
 }
 
+//SE OBTIENEN LOS DATOS DE TODOS LOS PROFESIONALES
 Future<List<Map<String, dynamic>>> obtenerProfesionales() async {
   try {
     QuerySnapshot<Map<String, dynamic>> query =
@@ -252,6 +292,7 @@ Future<List<Map<String, dynamic>>> obtenerProfesionales() async {
   return [];
 }
 
+//SE OBTIENEN LAS CITAS MEDICAS MAS CERCANAS FILTRADOS POR RUT Y SE OBTIENEN TODOS LOS DATOS NECESARIOS
 Future<List<Map<String, dynamic>>> obtenerCitasMedicasMasProximaPorRut(
     String? rut) async {
   try {
@@ -330,6 +371,8 @@ Future<List<Map<String, dynamic>>> obtenerCitasMedicasMasProximaPorRut(
   }
 }
 
+//SE OBTIENEN LAS CITAS MEDICAS MAS CERCANAS FILTRADOS POR ESPECIALIDAD Y SE OBTIENEN TODOS LOS DATOS NECESARIOS
+
 Future<List<Map<String, dynamic>>> obtenerCitasMedicasMasProximaPorEspecialidad(
     String? especialidad) async {
   try {
@@ -359,9 +402,7 @@ Future<List<Map<String, dynamic>>> obtenerCitasMedicasMasProximaPorEspecialidad(
       DateTime fechaCita = datosCitaMedica['fecha'].toDate();
       String fechaCitaFormateada = DateFormat('dd/MM/yyyy').format(fechaCita);
 
-      if (primeraCita == null) {
-        primeraCita = fechaCitaFormateada;
-      }
+      primeraCita ??= fechaCitaFormateada;
 
       String horaCita =
           '${fechaCita.hour.toString().padLeft(2, '0')}:${fechaCita.minute.toString().padLeft(2, '0')}';
@@ -418,6 +459,7 @@ Future<List<Map<String, dynamic>>> obtenerCitasMedicasMasProximaPorEspecialidad(
   }
 }
 
+//SE OBTIENEN LA FECHA EN LAS CUALES HAY CITAS MEDICAS DISPONIBLES MEDIANTE EL RUT DEL PROFESIONAL
 Future<List<String>> obtenerDiasCitasMedicasPorRut(String? rut) async {
   try {
     QuerySnapshot<Map<String, dynamic>> query = await FirebaseFirestore.instance
@@ -449,6 +491,8 @@ Future<List<String>> obtenerDiasCitasMedicasPorRut(String? rut) async {
     return [];
   }
 }
+
+//SE OBTIENEN LA FECHA EN LAS CUALES HAY CITAS MEDICAS DISPONIBLES MEDIANTE LA ESPECIALIDAD
 
 Future<List<String>> obtenerDiasCitasMedicasPorEspecialidad(
     String? especialidad) async {
@@ -483,6 +527,7 @@ Future<List<String>> obtenerDiasCitasMedicasPorEspecialidad(
   }
 }
 
+//SE OBTIENEN LAS CITAS MEDICAS PARA EL DIA SELECCIONADO FILTRADO POR EL RUT DEL PROFESIONAL Y SE OBTIENEN TODOS LOS DATOS NECESARIO A UTILIZAR
 Future<List<Map<String, dynamic>>> obtenerCitasMedicasDiaSeleccionadoPorRut(
     String? rut, DateTime fechaCita) async {
   try {
@@ -572,6 +617,7 @@ Future<List<Map<String, dynamic>>> obtenerCitasMedicasDiaSeleccionadoPorRut(
   }
 }
 
+//SE OBTIENEN LAS CITAS MEDICAS PARA EL DIA SELECCIONADO FILTRADO POR LA ESPECIALIDAD Y SE OBTIENEN TODOS LOS DATOS NECESARIO A UTILIZAR
 Future<List<Map<String, dynamic>>>
     obtenerCitasMedicasDiaSeleccionadoPorEspecialidad(
         String? especialidad, DateTime fechaCita) async {
@@ -663,6 +709,7 @@ Future<List<Map<String, dynamic>>>
   }
 }
 
+//SE OBTIENEN TODOS LOS DATOS DE ESPECIALIDAD FILTRADO POR SU ID
 Future<Map<String, dynamic>?> obtenerDatosEspecialidad(
     String idEspecialidad) async {
   DocumentSnapshot<Map<String, dynamic>> especialidadSnapshot =

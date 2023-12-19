@@ -20,7 +20,9 @@ class MisReservasScreen extends StatefulWidget {
 
 class _MisReservasScreenState extends State<MisReservasScreen> {
   final SessionManager _sessionManager = SessionManager();
-  List<Map<String, dynamic>> datosReservaUsuario = [];
+  List<Map<String, dynamic>> datosReservaUsuario =
+      []; //Para almacenar los datos de reserva del usuario
+  //Para almacenar los datos del usuario
   String? rutUsuario;
   String? nombreUsuario;
   String? correoUsuario;
@@ -33,12 +35,15 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
   @override
   void initState() {
     super.initState();
+    //Se inicializa el temporizador de la sesion
     _sessionManager.startSessionTimer(context);
+    //Al iniciar se cargan los datos del usuario
     cargarDatos();
   }
 
   @override
   void dispose() {
+    //Se detiene el temporizador de la sesion
     _sessionManager.stopSessionTimer();
     super.dispose();
   }
@@ -48,17 +53,57 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.blue_900,
-        title: Align(
-          alignment: Alignment.centerRight,
-          child: Image.asset('lib/img/logoClinica.png', height: 45),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset(
+              'lib/img/logoClinica.png',
+              height: 45,
+            ),
+            //Boton para cerrar sesion y volver a la interfaz principal de login
+            ElevatedButton(
+                onPressed: () async {
+                  await cerrarSesion(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  backgroundColor: AppColors.white,
+                  fixedSize: const Size(150, 40),
+                  padding: const EdgeInsets.all(10.0),
+                  foregroundColor: AppColors.blue_1000,
+                ),
+                child: const Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Cerrar Sesión',
+                            style: TextStyle(color: AppColors.buttons),
+                          ),
+                          SizedBox(width: 4),
+                          Icon(
+                            Icons.logout_rounded,
+                            color: AppColors.buttons,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )),
+          ],
         ),
         automaticallyImplyLeading: false,
       ),
       body: FutureBuilder<bool>(
+        //Se verifica la sesion
         future: verificarSesion(),
         builder: (context, snapshot) {
+          //Se muestra una pantalla de carga mientras se verifica si es el caso
           if (snapshot.connectionState == ConnectionState.waiting) {
-            // Puedes mostrar un indicador de carga mientras se verifica la sesión
             return Scaffold(
               backgroundColor: AppColors.blue_900,
               body: Center(
@@ -72,12 +117,13 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                 body: Column(
                   children: [
                     Container(
-                      height: 250,
+                      height: 300,
                       width: double.infinity,
                       color: AppColors.blue_400,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const SizedBox(height: 50),
                           const Padding(
                             padding: EdgeInsets.only(left: 16.0),
                             child: Text(
@@ -88,6 +134,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                               ),
                             ),
                           ),
+                          //Se muestra en la interfaz el nombre y apellidos del usuario segun corresponda
                           Padding(
                             padding: const EdgeInsets.only(left: 16.0),
                             child: Text('$nombreUsuario',
@@ -104,13 +151,14 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                           ),
                           const SizedBox(height: 30),
                           Center(
+                            //Boton para buscar hora
                             child: ElevatedButton(
                               onPressed: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        const BusquedaHoraScreen(),
+                                        const BusquedaHoraScreen(), //Redirige a la interfaz busqueda de hora
                                   ),
                                 );
                               },
@@ -163,7 +211,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                   maxWidth: 150, maxHeight: 40),
                               child: GestureDetector(
                                 onTap: () {
-                                  // No hay acción cuando se hace clic
+                                  // No hay acción cuando se hace clic ya que se encuentra en esta interfaz
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
@@ -195,7 +243,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        const MiHistorialMedicoScreen(),
+                                        const MiHistorialMedicoScreen(), //Al hacer click redirige a la interfaz de miHistorialMedico
                                   ),
                                 );
                               },
@@ -227,6 +275,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                       padding: EdgeInsets.only(left: 28.0),
                       child: Align(
                         alignment: Alignment.centerLeft,
+                        //Muestra el contenido de las reservas agendas
                         child: Text(
                           'Reservas agendadas',
                           style: TextStyle(
@@ -239,6 +288,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                     const SizedBox(
                       height: 12.0,
                     ),
+                    //Si los datos de reserva del usuario no estan vacios se crea un carrousel
                     if (datosReservaUsuario.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(
@@ -251,11 +301,19 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                               enableInfiniteScroll: false,
                               viewportFraction: 0.90,
                             ),
+                            //Se crean tantos items como reservas tenga el usuario, va generando las reservas segun la cantidad que tenga
                             items: datosReservaUsuario.map(
                               (i) {
+                                //Obtenemos el id de la cita para posteriormente si queremos anular hora, poder anularla con el id
                                 String idCita = i['id_cita'];
+                                //Obtenmos la fecha
                                 Timestamp formatoTimeStamp = i['fecha'];
+                                //Cambiamos el formato de timeStamp a DateTime
                                 DateTime fecha = formatoTimeStamp.toDate();
+                                //Creamos una variavle para manejar el periodo de dos dias de antelacion para anular hora
+                                DateTime fechaEnDosDias =
+                                    DateTime.now().add(const Duration(days: 2));
+                                //Creamos una lista con los nombres de los dias
                                 List<String> nombreDia = [
                                   'Lunes',
                                   'Martes',
@@ -265,6 +323,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                   'Sábado',
                                   'Domingo'
                                 ];
+                                //Lo mismo para los meses
                                 List<String> nombreMes = [
                                   'Enero',
                                   'Febrero',
@@ -279,6 +338,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                   'Noviembre',
                                   'Diciembre'
                                 ];
+                                //Obtenemos los distintos datos de la fecha
                                 int numeroDia = fecha.day;
                                 int anio = fecha.year;
                                 int numeroDiaDeLaSemana = fecha.weekday;
@@ -286,6 +346,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                 int hora = fecha.hour;
                                 int minutos = fecha.minute;
 
+                                //Retornamos un constructor
                                 return Builder(
                                   builder: (BuildContext context) {
                                     return Container(
@@ -333,6 +394,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                                         ),
                                                         const SizedBox(
                                                             width: 8),
+                                                        //Mostramos la fecha de la reserva con el formato que quiero Ej: Martes 19 de diciembre del 2023
                                                         Text(
                                                           '${nombreDia[numeroDiaDeLaSemana - 1]} ${numeroDia.toString().padLeft(2, '0')} de ${nombreMes[numeroMes - 1]} del ${anio.toString()}',
                                                           style: const TextStyle(
@@ -347,6 +409,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                                   Row(
                                                     children: [
                                                       const SizedBox(width: 10),
+                                                      //Imagen del profesional, en este caso default
                                                       Image.asset(
                                                           'lib/img/default.png',
                                                           height: 100),
@@ -358,6 +421,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                                             CrossAxisAlignment
                                                                 .start,
                                                         children: [
+                                                          //Mostramos nombre y apellido del profesional.
                                                           Text(
                                                             '${i['nombre_profesional']} ${i['apellido_paterno_profesional']} ${i['apellido_materno_profesional'].substring(0, 1)}.',
                                                             style:
@@ -370,6 +434,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                                           const SizedBox(
                                                             height: 4,
                                                           ),
+                                                          //Mostramos la especialidad
                                                           Text(
                                                             i['nombre_especialidad']
                                                                 .toString(),
@@ -383,6 +448,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                                           const SizedBox(
                                                             height: 4,
                                                           ),
+                                                          //Mostramos la hora y minutos de la cita
                                                           Container(
                                                               padding: const EdgeInsets
                                                                   .only(
@@ -408,64 +474,71 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                                                     ],
                                                   ),
                                                   const SizedBox(height: 20),
-                                                  Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        SizedBox(
-                                                          height: 50,
-                                                          width: 200,
-                                                          child: ElevatedButton(
-                                                            onPressed: () {
-                                                              _mostrarVentanaEmergente(
-                                                                  context,
-                                                                  idCita);
-                                                            },
-                                                            style:
-                                                                ElevatedButton
-                                                                    .styleFrom(
-                                                              shape:
-                                                                  RoundedRectangleBorder(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            12),
-                                                              ),
-                                                              backgroundColor:
-                                                                  AppColors
-                                                                      .error,
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .all(0.0),
-                                                              fixedSize:
-                                                                  const Size(
-                                                                      250, 60),
-                                                              foregroundColor:
-                                                                  AppColors
-                                                                      .blue_900,
-                                                            ),
+                                                  //Verificamos que la cita tenga una antelacion minima de 2 dias para poder habilitar el boton de anular hora
+                                                  if (fecha
+                                                      .isAfter(fechaEnDosDias))
+                                                    Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          SizedBox(
+                                                            height: 50,
+                                                            width: 200,
                                                             child:
-                                                                const Padding(
-                                                              padding:
-                                                                  EdgeInsets
-                                                                      .all(6),
-                                                              child: Center(
-                                                                child: Text(
-                                                                  'Anular Hora',
-                                                                  style:
-                                                                      TextStyle(
-                                                                    color: AppColors
-                                                                        .white,
-                                                                    fontSize:
-                                                                        18,
+                                                                ElevatedButton(
+                                                              onPressed: () {
+                                                                _mostrarVentanaEmergente(
+                                                                    //Se abre ventana emergente para anular hora
+                                                                    context,
+                                                                    idCita);
+                                                              },
+                                                              style:
+                                                                  ElevatedButton
+                                                                      .styleFrom(
+                                                                shape:
+                                                                    RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              12),
+                                                                ),
+                                                                backgroundColor:
+                                                                    AppColors
+                                                                        .error,
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(
+                                                                        0.0),
+                                                                fixedSize:
+                                                                    const Size(
+                                                                        250,
+                                                                        60),
+                                                                foregroundColor:
+                                                                    AppColors
+                                                                        .blue_900,
+                                                              ),
+                                                              child:
+                                                                  const Padding(
+                                                                padding:
+                                                                    EdgeInsets
+                                                                        .all(6),
+                                                                child: Center(
+                                                                  child: Text(
+                                                                    'Anular Hora',
+                                                                    style:
+                                                                        TextStyle(
+                                                                      color: AppColors
+                                                                          .white,
+                                                                      fontSize:
+                                                                          18,
+                                                                    ),
                                                                   ),
                                                                 ),
                                                               ),
                                                             ),
                                                           ),
-                                                        ),
-                                                      ]),
+                                                        ]),
                                                   const SizedBox(height: 20),
                                                 ],
                                               )),
@@ -486,7 +559,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                   builder: (context) => const LoginPage(),
                 ),
               );
-              return Container(); // Puedes devolver un contenedor vacío o cualquier otro widget aquí
+              return Container();
             }
           }
         },
@@ -494,9 +567,11 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
     );
   }
 
+  //Se cargan los datos del usuario
   Future<List<Map<String, dynamic>>> cargarDatosUsuario() async {
+    //Se inicializar una instancia de sesion
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
+    //Actualiazamos los datos
     setState(() {
       rutUsuario = prefs.getString('rutUsuario');
       nombreUsuario = prefs.getString('nombreUsuario');
@@ -509,13 +584,14 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
       telefonoUsuario = prefs.getString('telefonoUsuario');
       fecNacUsuario = prefs.getString('fecNacUsuario');
     });
-
+    //Obtenemos los datos de reserva para el usuario que inicio sesion
     List<Map<String, dynamic>> datosReservaUsuario =
         await obtenerReservasUsuarios(rutUsuario!);
 
     return datosReservaUsuario;
   }
 
+  //Ventana emergente de anular hora
   void _mostrarVentanaEmergente(BuildContext context, String idCita) {
     showDialog(
       context: context,
@@ -566,10 +642,13 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   TextButton(
+                    //Al hacer click en si, se anula la hora, gracias el id de la cita que le pasamos como parametro
                     onPressed: () async {
                       Navigator.of(context).pop();
                       await anularHora(idCita);
-                      cargarDatos();
+                      setState(() {
+                        cargarDatos();
+                      });
                     },
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.only(left: 45, right: 45),
@@ -582,6 +661,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
                   ),
                   const Spacer(), // Añade un Spacer para el espacio entre los botones
                   TextButton(
+                    //Si selecciona que no se cierra la ventana emergente
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
@@ -603,6 +683,7 @@ class _MisReservasScreenState extends State<MisReservasScreen> {
     );
   }
 
+  //Se cargan los datos del usuario
   void cargarDatos() {
     cargarDatosUsuario().then((List<Map<String, dynamic>> result) {
       setState(() {

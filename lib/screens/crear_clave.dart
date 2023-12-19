@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, avoid_print
+// ignore_for_file: library_private_types_in_public_api, use_build_context_synchronously, avoid_print, duplicate_ignore
 import 'package:clinica_ulagos_app/screens/registrarse_exitoso.dart';
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
@@ -6,6 +6,7 @@ import 'package:clinica_ulagos_app/consultasFirebase/actualizar_datos.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class CrearClaveScreen extends StatefulWidget {
+  //Se inicializa el constructor con sus parametros
   const CrearClaveScreen(
       {Key? key,
       required this.rut,
@@ -17,7 +18,7 @@ class CrearClaveScreen extends StatefulWidget {
       required this.correo,
       required this.telefono})
       : super(key: key);
-
+  //Se guardan los datos
   final String rut;
   final String nombres;
   final String apellidoPat;
@@ -37,11 +38,13 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
   final TextEditingController _claveController = TextEditingController();
   final TextEditingController _claveController2 = TextEditingController();
 
+  //Variables para almacenar el valor de las claves
   String claveValue = '';
   String claveValue2 = '';
   bool errorClaveVacia = false;
   bool obscureText = true;
   bool errorClaveIguales = false;
+  //Validaciones regexp, para verificar que se cumpla el formato
   RegExp validacionClave1 = RegExp(r'^.{8,}$');
   RegExp validacionClave2 = RegExp(r'[A-Z]');
   RegExp validacionClave3 = RegExp(r'[a-z]');
@@ -116,11 +119,13 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
                 onSaved: (value) {
                   claveValue = value ?? '';
                 },
+                //Se manejan en tiempo real los errores
                 onChanged: (value) {
                   if (value.isEmpty) {
                     setState(() {
                       errorClaveVacia = true;
                     });
+                    //Si las dos claves son distintas se activa un error
                   } else if (value != claveValue2) {
                     setState(() {
                       errorClaveIguales = true;
@@ -135,6 +140,7 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
                     });
                   }
                 },
+                //Se valida el formulario
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     setState(() {
@@ -187,6 +193,7 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
                 ),
               ),
             ),
+            //Tipo de error
             if (errorClaveVacia)
               const Padding(
                 padding: EdgeInsets.only(top: 7.0, left: 30.0),
@@ -220,7 +227,9 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
                 onSaved: (value) {
                   claveValue = value ?? '';
                 },
+                //Se manejan en tiempo real los errores
                 onChanged: (value) {
+                  //Si son distintas se activa un error
                   if (value != claveValue) {
                     setState(() {
                       errorClaveIguales = true;
@@ -233,6 +242,7 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
                     });
                   }
                 },
+                //Se valida el formulario
                 validator: (value) {
                   if (value != claveValue) {
                     setState(() {
@@ -281,6 +291,7 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
                 ),
               ),
             ),
+            //Tipo de error cuando las claves no son iguales
             if (errorClaveIguales)
               const Padding(
                 padding: EdgeInsets.only(top: 7.0, left: 30.0),
@@ -299,13 +310,16 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
                     width: 0.25,
                   ),
                 ),
+                //Se crean las validaciones de las claves, para facilitar visualmente los erroes si presenta el usuario
                 child: ListView(
                   shrinkWrap: true,
                   children: [
                     ListTile(
+                      //Que cumpla la clave con al menos 8 caracteres
                       contentPadding: const EdgeInsets.symmetric(vertical: 0.5),
                       leading: Icon(Icons.check_circle,
                           color:
+                              //Si cumple se cambia el color del icono
                               validacionClave1.hasMatch(_claveController.text)
                                   ? AppColors.check
                                   : AppColors.icons),
@@ -315,9 +329,11 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
                       ),
                     ),
                     ListTile(
+                      //Que cumpla la clave con al menos 1 letra mayuscula
                       contentPadding: const EdgeInsets.symmetric(vertical: 0.5),
                       leading: Icon(Icons.check_circle,
                           color:
+                              //Si cumple se cambia el color del icono
                               validacionClave2.hasMatch(_claveController.text)
                                   ? AppColors.check
                                   : AppColors.icons),
@@ -327,9 +343,11 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
                       ),
                     ),
                     ListTile(
+                      //Que cumpla la clave con al menos 1 letra minuuscula
                       contentPadding: const EdgeInsets.symmetric(vertical: 0.5),
                       leading: Icon(Icons.check_circle,
                           color:
+                              //Si cumple se cambia el color del icono
                               validacionClave3.hasMatch(_claveController.text)
                                   ? AppColors.check
                                   : AppColors.icons),
@@ -339,9 +357,11 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
                       ),
                     ),
                     ListTile(
+                      //Que cumpla la clave con al menos 1 numero
                       contentPadding: const EdgeInsets.symmetric(vertical: 0.5),
                       leading: Icon(Icons.check_circle,
                           color:
+                              //Si cumple se cambia el color del icono
                               validacionClave4.hasMatch(_claveController.text)
                                   ? AppColors.check
                                   : AppColors.icons),
@@ -359,17 +379,21 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
               children: [
                 ElevatedButton(
                   onPressed: () async {
+                    //Se verifica la validacion del formulario
                     if (_formKey.currentState?.validate() ?? false) {
                       _formKey.currentState?.save();
+                      //Si no hay ningun error se registra el usuario con el servicio de firebase de autenticacion
                       if (!errorClaveGeneral &&
                           !errorClaveVacia &&
                           // ignore: duplicate_ignore
                           !errorClaveIguales) {
+                        // ignore: no_leading_underscores_for_local_identifiers
                         final FirebaseAuth _auth = FirebaseAuth.instance;
                         await _auth.createUserWithEmailAndPassword(
                           email: widget.correo,
                           password: claveValue,
                         );
+                        //Guardamos tambien los datos del paciente en un documento en su respectiva coleccion pacientes
                         bool exito = await enviarDatosAFirebase(
                             widget.rut,
                             widget.nombres,
@@ -378,10 +402,10 @@ class _CrearClaveScreenState extends State<CrearClaveScreen> {
                             widget.fechaNacimiento,
                             widget.genero,
                             widget.correo,
-                            widget.telefono,
-                            claveValue);
+                            widget.telefono);
                         // ignore: use_build_context_synchronously
                         if (exito) {
+                          //Redirige a la interfaz de registroso exitoso, si hubo exito al registrarse
                           Navigator.push(
                             context,
                             MaterialPageRoute(

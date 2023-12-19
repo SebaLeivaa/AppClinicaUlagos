@@ -2,6 +2,8 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+//YA NO SE USA ESTA FUNCION, SE USABA ANTES DE UTILIZAR LA AUTENTICACION DE FIREBASE
+//IGNORAR
 Future<bool> autenticarUsuario(String rut, String clave) async {
   try {
     // Consultar la colección de usuarios en Firestore

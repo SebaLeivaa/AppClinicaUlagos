@@ -21,7 +21,9 @@ class MiHistorialMedicoScreen extends StatefulWidget {
 
 class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
   final SessionManager _sessionManager = SessionManager();
-  List<Map<String, dynamic>> datosHistorialUsuario = [];
+  List<Map<String, dynamic>> datosHistorialUsuario =
+      []; //Para almacenar los datos de reserva del usuario
+  //Para almacenar los datos del usuario
   String? rutUsuario;
   String? nombreUsuario;
   String? correoUsuario;
@@ -34,8 +36,10 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
   @override
   void initState() {
     super.initState();
+    //Se inicializa el temporizador de la sesion
     _sessionManager.startSessionTimer(context);
 
+    //Se cargan los datos del usuario
     cargarDatosUsuario().then((List<Map<String, dynamic>> result) {
       setState(() {
         datosHistorialUsuario = result;
@@ -45,6 +49,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
 
   @override
   void dispose() {
+    //Se detiene el temporizador de la sesion
     _sessionManager.stopSessionTimer();
     super.dispose();
   }
@@ -54,17 +59,55 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.blue_900,
-        title: Align(
-          alignment: Alignment.centerRight,
-          child: Image.asset('lib/img/logoClinica.png', height: 45),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset(
+              'lib/img/logoClinica.png',
+              height: 45,
+            ),
+            ElevatedButton(
+                onPressed: () async {
+                  await cerrarSesion(context); // Boton para cerrar sesion
+                },
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  backgroundColor: AppColors.white,
+                  fixedSize: const Size(150, 40),
+                  padding: const EdgeInsets.all(10.0),
+                  foregroundColor: AppColors.blue_1000,
+                ),
+                child: const Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Cerrar Sesión',
+                            style: TextStyle(color: AppColors.buttons),
+                          ),
+                          SizedBox(width: 4),
+                          Icon(
+                            Icons.logout_rounded,
+                            color: AppColors.buttons,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )),
+          ],
         ),
         automaticallyImplyLeading: false,
       ),
       body: FutureBuilder<bool>(
-        future: verificarSesion(),
+        future: verificarSesion(), //Se verifica la sesion
         builder: (context, snapshot) {
+          //Se muestra una pantalla de carga mientras se verifica si es el caso
           if (snapshot.connectionState == ConnectionState.waiting) {
-            // Puedes mostrar un indicador de carga mientras se verifica la sesión
             return Scaffold(
               backgroundColor: AppColors.blue_900,
               body: Center(
@@ -78,12 +121,13 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                 body: Column(
                   children: [
                     Container(
-                      height: 250,
+                      height: 300,
                       width: double.infinity,
                       color: AppColors.blue_400,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const SizedBox(height: 50),
                           const Padding(
                             padding: EdgeInsets.only(left: 16.0),
                             child: Text(
@@ -94,6 +138,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                               ),
                             ),
                           ),
+                          //Se muestra en la interfaz el nombre y apellidos del usuario segun corresponda
                           Padding(
                             padding: const EdgeInsets.only(left: 16.0),
                             child: Text('$nombreUsuario',
@@ -116,7 +161,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        const BusquedaHoraScreen(),
+                                        const BusquedaHoraScreen(), //Redirige a la interfaz busqueda de hora
                                   ),
                                 );
                               },
@@ -163,7 +208,6 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                         children: [
                           const SizedBox(width: 8),
                           Container(
-                            // Puedes ajustar el ancho máximo de la caja aquí
                             constraints: const BoxConstraints(
                                 maxWidth: 150, maxHeight: 40),
                             child: InkWell(
@@ -172,7 +216,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        const MisReservasScreen(),
+                                        const MisReservasScreen(), //Redirige a la interfaz de mis Reservas
                                   ),
                                 );
                               },
@@ -200,7 +244,6 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                             width: 10,
                           ),
                           Container(
-                              // Puedes ajustar el ancho máximo de la caja aquí
                               constraints: const BoxConstraints(
                                   maxWidth: 200, maxHeight: 40),
                               child: GestureDetector(
@@ -246,6 +289,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                     const SizedBox(
                       height: 12.0,
                     ),
+                    //Si los datos de reserva del usuario no estan vacios se crea un carrousel
                     if (datosHistorialUsuario.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(
@@ -258,11 +302,16 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                               enableInfiniteScroll: false,
                               viewportFraction: 0.90,
                             ),
+                            //Se crean tantos items como reservas tenga el usuario, va generando las reservas segun la cantidad que tenga
                             items: datosHistorialUsuario.map(
                               (i) {
+                                //Obtenmos la fecha
                                 Timestamp formatoTimeStamp = i['fecha'];
+                                //Cambiamos el formato de timeStamp a DateTime
                                 DateTime fecha = formatoTimeStamp.toDate();
+                                //Obtenemos el detalle de la fecha
                                 String detalle = i['detalle'];
+                                //Creamos una lista con los nombres de los dias
                                 List<String> nombreDia = [
                                   'Lunes',
                                   'Martes',
@@ -272,6 +321,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                                   'Sábado',
                                   'Domingo'
                                 ];
+                                //Lo mismo para los meses
                                 List<String> nombreMes = [
                                   'Enero',
                                   'Febrero',
@@ -286,6 +336,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                                   'Noviembre',
                                   'Diciembre'
                                 ];
+                                //Obtenemos los distintos datos de la fecha
                                 int numeroDia = fecha.day;
                                 int anio = fecha.year;
                                 int numeroDiaDeLaSemana = fecha.weekday;
@@ -293,6 +344,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                                 int hora = fecha.hour;
                                 int minutos = fecha.minute;
 
+                                //Retornamos un constructor
                                 return Builder(
                                   builder: (BuildContext context) {
                                     return Container(
@@ -340,6 +392,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                                                         ),
                                                         const SizedBox(
                                                             width: 8),
+                                                        //Mostramos la fecha de la reserva con el formato que quiero Ej: Martes 19 de diciembre del 2023
                                                         Text(
                                                           '${nombreDia[numeroDiaDeLaSemana - 1]} ${numeroDia.toString().padLeft(2, '0')} de ${nombreMes[numeroMes - 1]} del ${anio.toString()}',
                                                           style: const TextStyle(
@@ -354,6 +407,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                                                   Row(
                                                     children: [
                                                       const SizedBox(width: 10),
+                                                      //Imagen del profesional, en este caso default
                                                       Image.asset(
                                                           'lib/img/default.png',
                                                           height: 100),
@@ -365,6 +419,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                                                             CrossAxisAlignment
                                                                 .start,
                                                         children: [
+                                                          //Imagen del profesional, en este caso default
                                                           Text(
                                                             '${i['nombre_profesional']} ${i['apellido_paterno_profesional']} ${i['apellido_materno_profesional'].substring(0, 1)}.',
                                                             style:
@@ -377,6 +432,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                                                           const SizedBox(
                                                             height: 4,
                                                           ),
+                                                          //Mostramos la especialidad
                                                           Text(
                                                             i['nombre_especialidad']
                                                                 .toString(),
@@ -404,6 +460,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                                                                       BorderRadius
                                                                           .circular(
                                                                               8)),
+                                                              //Mostramos la hora y minutos de la cita
                                                               child: Text(
                                                                 '${hora.toString().padLeft(2, '0')}:${minutos.toString().padLeft(2, '0')}',
                                                                 style: const TextStyle(
@@ -432,6 +489,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
                                                                   builder:
                                                                       (context) =>
                                                                           DetalleCitaScreen(
+                                                                    //Redirigimos a la interfaz de detalle_cita y le pasamos los siguientes datos
                                                                     citaDetalle:
                                                                         detalle,
                                                                     fullNameProfesional:
@@ -519,7 +577,8 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const LoginPage(),
+                  builder: (context) =>
+                      const LoginPage(), //Devuelve a la interfaz principal de login
                 ),
               );
               return Container();
@@ -530,9 +589,12 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
     );
   }
 
-  Future<List<Map<String, dynamic>>> cargarDatosUsuario() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  //Se cargan los datos del usuario
 
+  Future<List<Map<String, dynamic>>> cargarDatosUsuario() async {
+    //Se inicializar una instancia de sesion
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    //Actualiazamos los datos
     setState(() {
       rutUsuario = prefs.getString('rutUsuario');
       nombreUsuario = prefs.getString('nombreUsuario');
@@ -545,7 +607,7 @@ class _MiHistorialMedicoScreenState extends State<MiHistorialMedicoScreen> {
       telefonoUsuario = prefs.getString('telefonoUsuario');
       fecNacUsuario = prefs.getString('fecNacUsuario');
     });
-
+    //Obtenemos los datos de reserva para el usuario que inicio sesion
     List<Map<String, dynamic>> datosHistorialUsuario =
         await obtenerHistorialUsuarios(rutUsuario!);
 
